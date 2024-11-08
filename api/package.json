@@ -1,0 +1,42 @@
+{
+  "name": "inventory-locator-api",
+  "version": "1.0.0",
+  "description": "Inventory locator API",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev src/server.ts",
+    "generatePassword": "ts-node-dev src/scripts/generatePassword.ts",
+    "build": "tsc",
+    "deploy": "cd deployment && ./deploy.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "imap": "^0.8.19",
+    "jsonwebtoken": "^9.0.2",
+    "mailparser": "^3.7.1",
+    "moment-timezone": "^0.5.46",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.11.3"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/imap": "^0.8.42",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/mailparser": "^3.4.5",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.8.6",
+    "esbuild": "^0.24.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  }
+}

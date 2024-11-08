@@ -1,0 +1,68 @@
+# Flutter and Dart
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.flutter-versions
+build/
+# Uncomment if you're using the web directory in Flutter
+# web/
+.cobuild/
+.macos/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/FlutterPluginRegistrant.swift
+
+# Android
+android/.gradle/
+android/app/debug.keystore
+android/key.properties
+android/app/google-services.json
+android/app/google-services.xml
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/App.framework
+ios/Flutter/engine/
+ios/Flutter/Flutter.framework
+ios/Flutter/FlutterPluginRegistrant/
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# VS Code
+.vscode/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-error.log
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+.pnp/
+.pnp.js
+
+# dotenv environment variables
+.env
+.env.*
+
+# IDEs
+.idea/
+*.iml
+
+# macOS files
+.DS_Store
+
+# Others
+coverage/
+*.swp
+*.swo
