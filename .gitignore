@@ -66,3 +66,4 @@ jspm_packages/
 coverage/
 *.swp
 *.swo
+*.sh
