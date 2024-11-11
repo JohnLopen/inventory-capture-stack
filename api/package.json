@@ -9,6 +9,10 @@
     "generatePassword": "ts-node-dev src/scripts/generatePassword.ts",
     "generateToken": "ts-node-dev src/scripts/generateToken.ts",
     "generateApiKey": "ts-node-dev src/scripts/generateApiKey.ts",
+    "tesseract": "ts-node-dev src/scripts/tesseract.ts",
+    "extract_with_tesseract": "ts-node-dev src/scripts/queue/extract_with_tesseract.ts",
+    "open_ai_text_analysis": "ts-node-dev src/scripts/queue/open_ai_text_analysis.ts",
+    "test_image_to_queue": "ts-node-dev src/scripts/test/test_image_to_queue.ts",
     "build": "tsc",
     "deploy": "cd deployment && ./deploy.sh"
   },
@@ -22,12 +26,16 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "imap": "^0.8.19",
+    "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
     "mailparser": "^3.7.1",
     "moment-timezone": "^0.5.46",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "mysql2": "^3.11.3"
+    "mysql2": "^3.11.3",
+    "openai": "^4.71.1",
+    "sharp": "^0.33.5",
+    "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
