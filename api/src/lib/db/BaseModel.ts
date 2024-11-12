@@ -5,10 +5,8 @@ class BaseModel {
     table: string = '';
     primary: string = 'id';
     limit: number = 0;
-    // Guarded columns to exclude from results
     guarded: string[] = [];
 
-    // Define relationships
     relationships: Record<string, { type: 'hasOne' | 'hasMany' | 'belongsTo', foreignKey: string, model: typeof BaseModel }> = {};
 
     constructor(table: string, guardedColumns: string[] = []) {
@@ -17,27 +15,21 @@ class BaseModel {
     }
 
     public guard(columns: string[]) {
-        this.guarded = [...columns]
-        return this
+        this.guarded = [...columns];
+        return this;
     }
 
-    // Method to construct SELECT statement, excluding guarded columns
     private async getSelectColumns(select: string = '*'): Promise<string> {
         if (select !== '*' || this.guarded.length === 0) return select;
 
-        // Fetch column names from the table
         const query = `SHOW COLUMNS FROM ${this.table}`;
         const columns = await this.executeQuery<any[]>(query);
         const columnsList = columns?.map(col => col.Field);
 
-        // Exclude guarded columns
         const visibleColumns = columnsList?.filter(col => !this.guarded.includes(col));
         return visibleColumns?.join(', ') || '';
     }
 
-    /**
-     * Define a relationship.
-     */
     hasOne(relatedModel: typeof BaseModel, foreignKey: string, alias: string) {
         this.relationships[alias] = { type: 'hasOne', foreignKey, model: relatedModel };
     }
@@ -50,7 +42,6 @@ class BaseModel {
         this.relationships[alias] = { type: 'belongsTo', foreignKey, model: relatedModel };
     }
 
-    // Fetch related data for a row based on defined relationships
     private async fetchRelationshipsForRow(row: any) {
         for (const alias in this.relationships) {
             const relationship = this.relationships[alias];
@@ -58,26 +49,24 @@ class BaseModel {
         }
     }
 
-    // Fetch relationship data based on type
     private async fetchRelationship(row: any, relationship: { type: string, foreignKey: string, model: typeof BaseModel }) {
         const relatedModel = new relationship.model(relationship.model.prototype.table);
-        const foreignKeyValue = row[relationship.foreignKey];
+        // const foreignKeyValue = row[relationship.foreignKey];
 
-        if (!foreignKeyValue) return relationship.type === 'hasMany' ? [] : null;
+        // if (!foreignKeyValue) return relationship.type === 'hasMany' ? [] : null;
 
         switch (relationship.type) {
             case 'hasOne':
-                return await relatedModel.findByForeignKey(foreignKeyValue);
+                return await relatedModel.findByForeignKey(row.id, relationship.foreignKey);
             case 'hasMany':
-                return await relatedModel.findAllByForeignKey(foreignKeyValue);
+                return await relatedModel.findAllByForeignKey(row.id, relationship.foreignKey);
             case 'belongsTo':
-                return await relatedModel.find(foreignKeyValue);
+                return await relatedModel.findWhere(relationship.foreignKey, row.id);
             default:
                 return null;
         }
     }
 
-    // Execute query with error handling
     private async executeQuery<T>(sql: string, params: any[] = []): Promise<T | null> {
         try {
             const [rows] = await connectionPool.query<any>(sql, params);
@@ -88,7 +77,6 @@ class BaseModel {
         }
     }
 
-    // Get all records with relationships and guarded columns applied
     async get() {
         const selectColumns = await this.getSelectColumns();
         const query = `
@@ -105,12 +93,12 @@ class BaseModel {
         return rows;
     }
 
-    // Get records with specific conditions and relationships
-    async getWhere(where: string) {
+    async getWhere(where: string, skipRelations: boolean = false) {
         const selectColumns = await this.getSelectColumns();
+        console.log(this.table, selectColumns)
         const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${where} AND deleted_at IS NULL`;
         const rows = await this.executeQuery<any[]>(query);
-        if (rows) {
+        if (rows && !skipRelations) {
             for (const row of rows) {
                 await this.fetchRelationshipsForRow(row);
             }
@@ -118,7 +106,6 @@ class BaseModel {
         return rows;
     }
 
-    // Find a record by primary key or specified column with relationships
     async find(id: number, col?: string) {
         const selectColumns = await this.getSelectColumns();
         const query = `
@@ -132,7 +119,6 @@ class BaseModel {
         return rows ? rows[0] : null;
     }
 
-    // Find a record by column value with relationships
     async findWhere(column: string, value: any, select: string = '*') {
         const selectColumns = await this.getSelectColumns(select);
         const query = `
@@ -146,7 +132,6 @@ class BaseModel {
         return rows ? rows[0] : null;
     }
 
-    // Find a record with custom raw conditions and relationships
     async findRaw(where: string, select: string = '*') {
         const selectColumns = await this.getSelectColumns(select);
         const query = `
@@ -160,23 +145,20 @@ class BaseModel {
         return rows ? rows[0] : null;
     }
 
-    // Find a single record by a foreign key
-    async findByForeignKey(value: any) {
+    async findByForeignKey(value: any, foreignKey: string) {
         const selectColumns = await this.getSelectColumns();
-        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${this.primary} = ? AND deleted_at IS NULL`;
+        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${foreignKey} = ? AND deleted_at IS NULL`;
         const rows = await this.executeQuery<any[]>(query, [value]);
         return rows ? rows[0] : null;
     }
 
-    // Find multiple records by a foreign key
-    async findAllByForeignKey(value: any) {
+    async findAllByForeignKey(value: any, foreignKey: string) {
         const selectColumns = await this.getSelectColumns();
-        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${this.primary} = ? AND deleted_at IS NULL`;
+        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${foreignKey} = ? AND deleted_at IS NULL`;
         const rows = await this.executeQuery<any[]>(query, [value]);
         return rows || [];
     }
 
-    // Soft delete a record by updating deleted_at
     async delete(id: number) {
         const query = `
             UPDATE ${this.table}
@@ -186,7 +168,6 @@ class BaseModel {
         return await this.executeQuery(query, [now(), id]);
     }
 
-    // Create a new record
     async create(data: Record<string, any>) {
         data.created_at = now();
         const columns = Object.keys(data).join(', ');
@@ -197,7 +178,6 @@ class BaseModel {
         return await this.executeQuery(query, Object.values(data));
     }
 
-    // Update a record by primary key
     async update(data: Record<string, any>, id: number) {
         const updates = Object.keys(data).map(key => `${key} = ?`).join(', ');
         const query = `
@@ -207,6 +187,32 @@ class BaseModel {
         `;
         return await this.executeQuery(query, [...Object.values(data), id]);
     }
+
+    async count(withTrashed: boolean = false, params?: Record<string, any>): Promise<number | null> {
+        // Start building the base query
+        let query = `SELECT COUNT(*) as count FROM ${this.table} WHERE TRUE`;
+
+        // Add condition for trashed records if needed
+        if (!withTrashed) {
+            query += ' AND deleted_at IS NULL';
+        }
+
+        // Add conditions from params if they are provided
+        if (params) {
+            for (const [key, value] of Object.entries(params)) {
+                // Dynamically add conditions to the query for each param
+                // Assuming 'value' is safe for the query or is properly sanitized
+                query += ` AND ${key} = ?`;
+            }
+        }
+
+        // Execute the query with parameters
+        const rows = await this.executeQuery<{ count: number }[]>(query, Object.values(params || {}));
+
+        // Return the count if available, otherwise null
+        return rows && rows[0] ? rows[0].count : null;
+    }
+
 }
 
 export default BaseModel;

@@ -1,5 +1,9 @@
 export class CaptureService {
 
+    static extractData(ai_response: any): any {
+        throw new Error("Method not implemented.");
+    }
+
     /**
      * 
      * @param req 

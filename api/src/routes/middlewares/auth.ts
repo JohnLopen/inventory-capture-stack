@@ -4,6 +4,7 @@ configDotenv()
 // src/middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { User } from '../../app/user/User';
 
 const { JWT_SECRET } = process.env;
 
@@ -12,15 +13,23 @@ if (!JWT_SECRET) {
 }
 
 export interface AuthenticatedRequest extends Request {
-    user?: string | jwt.JwtPayload;
+    user: User;
 }
+
+declare global {
+    namespace Express {
+      interface Request {
+        user: User; // Adjust the type to whatever your decoded JWT contains
+      }
+    }
+  }
 
 export const authenticateJWT = (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
 ): void => {
-    const token = req.header('Authorization')?.split(' ')[1];
+    const token = req.header('Authorization');
 
     if (!token) {
         res.status(401).json({ message: 'Access token missing' });
@@ -29,7 +38,7 @@ export const authenticateJWT = (
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded; // Attach decoded token payload to the request
+        req.user = decoded as User; // Attach decoded token payload to the request
         next(); // Call next() if successful
     } catch (error) {
         res.status(403).json({ message: 'Invalid token' });

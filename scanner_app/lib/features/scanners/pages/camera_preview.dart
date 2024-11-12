@@ -6,7 +6,9 @@ import 'package:id_scanner/data/services/inventory/capture_service.dart';
 import 'package:path_provider/path_provider.dart';
 
 class CameraXPreview extends StatefulWidget {
-  const CameraXPreview({super.key});
+  final int boxId;
+
+  const CameraXPreview({super.key, required this.boxId});
 
   @override
   CameraExampleState createState() => CameraExampleState();
@@ -16,7 +18,6 @@ class CameraExampleState extends State<CameraXPreview> {
   CaptureService captureService = CaptureService();
   CameraController? _cameraController;
   List<CameraDescription>? cameras;
-  XFile? _capturedImage;
 
   @override
   void initState() {
@@ -49,10 +50,6 @@ class CameraExampleState extends State<CameraXPreview> {
         final imagePath = '${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
         final image = await _cameraController!.takePicture();
 
-        setState(() {
-          _capturedImage = XFile(imagePath);
-        });
-
         // Save the captured image to the file path
         await image.saveTo(imagePath);
 
@@ -74,12 +71,12 @@ class CameraExampleState extends State<CameraXPreview> {
           ),
           child: Container(
             width: MediaQuery.of(context).size.width * 0.8,
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  "Image Preview",
+                  "Capture Preview",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -99,9 +96,9 @@ class CameraExampleState extends State<CameraXPreview> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.cloud_upload, color: Colors.green),
+                      icon: const Icon(Icons.cloud_upload, color: Colors.green,),
                       onPressed: () {
-                        captureService.upload(imagePath);
+                        captureService.upload(widget.boxId, imagePath);
                         Navigator.of(context).pop();
                         // ScaffoldMessenger.of(context).showSnackBar(
                         //   const SnackBar(content: Text("Image will be uploaded in the background")),
@@ -137,7 +134,7 @@ class CameraExampleState extends State<CameraXPreview> {
       return const Center(child: CircularProgressIndicator());
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Inventory Scanner')),
+      appBar: AppBar(title: const Text('Inventory Capture')),
       body: Column(
         children: [
           Expanded(
@@ -155,7 +152,7 @@ class CameraExampleState extends State<CameraXPreview> {
                   child: Center(
                     child: FloatingActionButton(
                       heroTag: 'camera',
-                      backgroundColor: Colors.deepOrange,
+                      backgroundColor: Colors.blueAccent,
                       onPressed: _capturePhoto,
                       child: const Icon(
                         Icons.camera,

@@ -5,9 +5,9 @@ import { checkPassword, generateToken } from './helper'
 
 export class AuthController {
     static async login(req: Request, resp: Response) {
-        const { email, password } = req.body
+        const { username, password } = req.body
 
-        const user = await UserService.getByUsername(email)
+        const user = await UserService.getByUsername(username)
         console.log('user', user)
         if (!user) {
             resp.sendStatus(403)

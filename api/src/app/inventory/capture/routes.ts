@@ -24,6 +24,7 @@ const storage = multer.diskStorage({
 const uploader = multer({ storage });
 
 // Capture routes
+captureRoutes.get('/', CaptureController.get)
 captureRoutes.post('/', uploader.single('file'), CaptureController.upload)
 
 export default captureRoutes

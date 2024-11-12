@@ -2,6 +2,8 @@ import { configDotenv } from "dotenv";
 import { sleep } from "../../helpers/string";
 import { redisQueue } from "../../lib/redis/queue";
 import { openaiLib } from "../../lib/openai/openai";
+import { CaptureData } from "../../app/inventory/capture/CaptureData";
+import { CaptureService } from "../../app/inventory/capture/captureService";
 
 configDotenv();
 
@@ -26,10 +28,18 @@ configDotenv();
                 continue
             }
 
-            const { text, captureId } = queueData
+            const { text, captureDataId } = queueData
 
-            const response = await openaiLib.createCompletion({ role: 'user', content: text })
-            console.log('Response from openai', response)
+            const { aiResponse, aiCompletion, parsedData }: any = await openaiLib.createCompletion({ role: 'user', content: text })
+            console.log('Response from openai', { aiResponse, aiCompletion, parsedData })
+
+            if (aiResponse) {
+                await new CaptureData().update({
+                    ai_completion: JSON.stringify(aiCompletion),
+                    ai_response: JSON.stringify(aiResponse),
+                    data: JSON.stringify(parsedData || {})
+                }, captureDataId)
+            }
 
         } catch (error) {
             console.error('Failed to extract text:', error);

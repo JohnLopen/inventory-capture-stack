@@ -7,8 +7,8 @@ export class UserService {
      * @param email 
      * @returns 
      */
-    static getByUsername(email: string | undefined) {
-        return new User().findWhere('username', email)
+    static getByUsername(username: string | undefined) {
+        return new User().findWhere('username', username)
     }
 
     /**

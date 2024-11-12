@@ -27,7 +27,7 @@ class OpenaiLib {
   }
 
   // Chat function with part number extraction instruction
-  createCompletion(data: any) {
+  async createCompletion(data: any) {
     const { role, content } = data;
 
     // Append strict JSON instruction to the content
@@ -44,7 +44,9 @@ class OpenaiLib {
     const newContent = `${content}\n${instruction}`;
     this.applyOpts({ messages: [{ role, content: newContent }] });
 
-    return this._send();
+    const response = await this._send()
+
+    return { ...response, aiCompletion: this.opts };
   }
 
   async _send() {
@@ -54,8 +56,8 @@ class OpenaiLib {
       console.log('response', response);
 
       // Parse response to get valid JSON content
-      const parsedResponse = this.parseResponse(response);
-      return parsedResponse;
+      const parsedData = this.parseResponse(response);
+      return { parsedData, aiResponse: response };
     } catch (e: any) {
       console.error('Error creating completion:', e);
       return e.error ? e.error.message : e.toString();

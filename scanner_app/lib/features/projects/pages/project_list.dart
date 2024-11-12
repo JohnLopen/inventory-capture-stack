@@ -1,6 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:id_scanner/features/projects/pages/project_detail.dart';
+import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:id_scanner/features/auth/login/login.dart';
+import 'package:id_scanner/features/projects/pages/project_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../data/services/inventory/project_service.dart';
 import '../project.dart';
 
 class ProjectListScreen extends StatefulWidget {
@@ -11,63 +17,106 @@ class ProjectListScreen extends StatefulWidget {
 }
 
 class ProjectListScreenState extends State<ProjectListScreen> {
-  final List<Project> projects = []; // Replace with actual data source
+  late List<Project> projects = []; // Replace with actual data source
+  late int projectCount;
+
+  Future<void> _getProjects() async {
+    ProjectService().get().then((response) {
+      if (kDebugMode) {
+        print(response);
+      }
+
+      setState(() {
+        projectCount = response['count'];
+        projects = (response['projects'] as List)
+            .map((projectData) => Project.fromJson(projectData))
+            .toList();
+      });
+    }).catchError((error) {
+      log('Error fetching projects: $error');
+    });
+  }
+
+  @override
+  void initState() {
+    _getProjects();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Projects')),
-      body: ListView.builder(
+      appBar: AppBar(
+        backgroundColor: Colors.blueAccent, // Matching login color scheme
+        title: const Text('Inventory Capture (Beta)', style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.exit_to_app, color: Colors.white), // Logout icon
+            onPressed: () {
+              _logout(context); // Add logout functionality here
+            },
+          ),
+        ],
+      ),
+      body: projects.isNotEmpty
+          ? ListView.builder(
         itemCount: projects.length,
         itemBuilder: (context, index) {
           final project = projects[index];
-          return ListTile(
-            title: Text(project.label),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => ProjectDetailScreen(project)),
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+              title: Text(
+                '${project.label} (${project.boxes.length} ${project.boxes.length > 1 ? 'boxes' : 'box'})',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ProjectDetailScreen(project)),
+                );
+                _getProjects();
+              },
             ),
           );
         },
-      ),
+      )
+          : const Center(child: Text('Add a new project to begin', style: TextStyle(color: Colors.blueAccent))),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.blueAccent, // Matching login color scheme
+        child: const Icon(Icons.add, color: Colors.white),
         onPressed: () => _createNewProject(context),
       ),
     );
   }
 
   void _createNewProject(BuildContext context) {
-    final controller = TextEditingController();
+    ProjectService()
+        .post(body: {'label': 'Project ${projectCount + 1}'})
+        .then((data) async {
+      if (context.mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => ProjectDetailScreen(Project.fromJson(data['project']))),
+        );
+        _getProjects();
+      }
+    });
+  }
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('New Project'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: 'Enter project label'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final label = controller.text;
-              if (label.isNotEmpty) {
-                // Create a new project and add it to the list
-                setState(() {
-                  projects.add(Project(id: DateTime.now().toString(), label: label));
-                });
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+  // Function to handle the logout
+  Future<void> _logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('jwt_token');
+
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
     );
   }
 }

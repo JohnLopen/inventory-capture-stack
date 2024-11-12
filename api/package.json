@@ -11,8 +11,9 @@
     "generateApiKey": "ts-node-dev src/scripts/generateApiKey.ts",
     "tesseract": "ts-node-dev src/scripts/tesseract.ts",
     "extract_with_tesseract": "ts-node-dev src/scripts/queue/extract_with_tesseract.ts",
-    "open_ai_text_analysis": "ts-node-dev src/scripts/queue/open_ai_text_analysis.ts",
+    "openai_text_analysis": "ts-node-dev src/scripts/queue/openai_text_analysis.ts",
     "test_image_to_queue": "ts-node-dev src/scripts/test/test_image_to_queue.ts",
+    "clear_queue": "ts-node-dev src/scripts/test/clear_queue.ts",
     "build": "tsc",
     "deploy": "cd deployment && ./deploy.sh"
   },
@@ -24,6 +25,7 @@
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
     "express": "^4.21.1",
     "imap": "^0.8.19",
     "ioredis": "^5.4.1",

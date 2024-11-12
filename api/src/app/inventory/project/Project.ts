@@ -1,4 +1,5 @@
-import BaseModel from "../../lib/db/BaseModel";
+import BaseModel from "../../../lib/db/BaseModel";
+import { Box } from "../box/Box";
 
 export interface Project {
     id?: number;
@@ -10,5 +11,8 @@ export interface Project {
 export class Project extends BaseModel {
     constructor() {
         super('project')
+        this.relationships = {
+            'boxes': { type: 'hasMany', foreignKey: 'project_id', model: Box },
+        }
     }
 }

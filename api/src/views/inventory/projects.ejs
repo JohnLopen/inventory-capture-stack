@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 5px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: #fff;
+        }
+
+        .project-row {
+            background-color: #f0f8ff;
+        }
+
+        .box-row {
+            background-color: #f9f9f9;
+        }
+
+        .picture-row {
+            background-color: #ffffff;
+        }
+
+        .part-row {
+            background-color: #ffffff;
+        }
+
+        .nested-cell {
+            padding-left: 20px;
+        }
+
+        /* Lightbox styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .lightbox img {
+            max-width: 80%;
+            max-height: 70%;
+            margin-bottom: 20px;
+        }
+
+        .lightbox .close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .lightbox .edit-form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .lightbox .edit-form h3 {
+            margin-bottom: 10px;
+        }
+
+        .lightbox .edit-form ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .lightbox .edit-form ul li {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .lightbox .edit-form ul li input {
+            width: 70%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .lightbox .edit-form ul li button {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .lightbox .edit-form ul li button:hover {
+            background: #cc0000;
+        }
+
+        .lightbox .edit-form button {
+            background: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .lightbox .edit-form button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>InventoryCapture Projects</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Project</th>
+                    <th>Box</th>
+                    <th>Picture</th>
+                    <th>Part Number</th>
+                    <th>Quantity</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% projects.forEach(project=> { %>
+                    <tr class="project-row">
+                        <td colspan="6"><strong>Project <%= project.id %>: <%= project.label %></strong> (Last Updated:
+                            <%= project.last_updated %>)</td>
+                    </tr>
+                    <% project.boxes.forEach(box=> { %>
+                        <tr class="box-row">
+                            <td class="nested-cell"></td>
+                            <td><strong>
+                                    <%= box.label %>
+                                </strong></td>
+                            <td colspan="4"></td>
+                        </tr>
+                        <% box.captures.forEach(picture=> { %>
+                            <tr class="picture-row">
+                                <td class="nested-cell"></td>
+                                <td class="nested-cell"></td>
+                                <td><a href="#">Picture <%= picture.id %></a> (Taken: <%= picture.taken_on %>)</td>
+                                <td>
+                                    <%= picture.capture_data.data.part_number %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.qty %>
+                                </td>
+                                <td>
+                                    <%= picture.date %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% }) %>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <!-- Include the same lightbox and script section as before -->
+</body>
+
+</html>

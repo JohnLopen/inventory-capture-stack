@@ -1,89 +1,119 @@
-import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:id_scanner/data/services/inventory/capture_service.dart';
+import '../../../core/data/base_api.dart';
+import '../../boxes/box.dart';
+import '../../captures/capture.dart';
 import 'camera_preview.dart';
 
 class ScannerHome extends StatefulWidget {
-  final Position? position;
+  final Box box;
 
-  const ScannerHome({super.key, required this.position});
+  const ScannerHome({super.key, required this.box});
 
   @override
   ScannerHomeState createState() => ScannerHomeState();
 }
 
 class ScannerHomeState extends State<ScannerHome> {
-  Future<void> startCameraPreview(int? docType) async {
+  late List<Capture> captures = []; // Holds the boxes for the current project
+  late int captureCount;
+  
+  // Method to fetch the boxes and their captures
+  void _getCaptures() {
+    CaptureService().get(params: {'box_id': widget.box.id.toString()}).then((response) {
+      if (kDebugMode) {
+        print('API Response: $response');  // Debug the response from the API
+      }
+      setState(() {
+        captureCount = response['count'];
+        if ((response['captures'] as List).isNotEmpty) {
+          captures = (response['captures'] as List)
+              .map((captureData) => Capture.fromJson(captureData))  // Parse the box data
+              .toList();
+        }
+      });
+    }).catchError((error) {
+      log('Error fetching boxes: $error');
+    });
+  }
+  
+  Future<void> startCameraPreview() async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const CameraXPreview()),
+      MaterialPageRoute(builder: (context) => CameraXPreview(boxId: widget.box.id!)),
     );
+    _getCaptures();
+  }
+
+  @override
+  void initState() {
+    _getCaptures();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Inventory Scanner',
-          style: TextStyle(color: Colors.white),
+        backgroundColor: Colors.blueAccent,  // Matching the blue accent color from the login page
+        title: Text(
+          '${widget.box.label} Captures',
+          style: const TextStyle(color: Colors.white),  // White text for the AppBar
         ),
-        backgroundColor: Colors.black87, // Use a deep primary color for consistency
       ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.qr_code_scanner, // A modern scanner icon
-              size: 80,
-              color: Colors.deepOrangeAccent, // Icon color
-            ),
-            SizedBox(height: 20), // Space between icon and text
-            Text(
-              'Inventory Scanner (Beta)',
-              style: TextStyle(
-                fontSize: 26, // Larger text size
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                fontFamily: 'Roboto', // Modern font family
-                letterSpacing: 1.2, // Slight letter spacing for a clean look
+      body: captures.isNotEmpty
+          ? GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,  // Number of columns in the grid
+          crossAxisSpacing: 4.0,  // Space between columns
+          mainAxisSpacing: 4.0,  // Space between rows
+          childAspectRatio: 1.0,  // Aspect ratio of the grid items
+        ),
+        itemCount: captures.length,
+        itemBuilder: (context, index) {
+          final capture = captures[index];
+          final imagePath = '$apiBaseUrl/uploads/${capture.filename}';  // Construct the image path
+
+          return GestureDetector(
+            onTap: () {
+              // Handle image tap if needed, like viewing full-size image
+            },
+            child: Card(
+              elevation: 4.0,  // Slight elevation for better visibility
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Image.network(
+                  imagePath,  // Load image from network
+                  fit: BoxFit.cover,  // Ensure the image covers the thumbnail area
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.broken_image,  // Material icon for image error
+                      size: 50,  // Icon size
+                      color: Colors.grey,  // Icon color
+                    );
+                  },
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
-            SizedBox(height: 10),
-            Text(
-              'Easily scan and manage your inventory',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-          ],
+          );
+        },
+      )
+          : const Center(child: Text('No captures available for this box.')),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 40.0), // Adjust this to elevate the button
+        child: FloatingActionButton(
+          heroTag: 'camera',
+          backgroundColor: Colors.blueAccent,  // Match the color of the AppBar
+          onPressed: () => startCameraPreview(),
+          child: const Icon(
+            Icons.camera,
+            color: Colors.white,  // White icon for better contrast
+          ),
         ),
       ),
-      bottomNavigationBar: const BottomAppBar(
-        color: Colors.black12, // Gray background for the bottom bar
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [],
-        ),
-      ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          FloatingActionButton(
-            heroTag: 'camera',
-            backgroundColor: Colors.deepOrange,
-            onPressed: () => startCameraPreview(null),
-            child: const Icon(
-              Icons.camera,
-              color: Colors.white,
-            ),
-          )
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, // Adjust location if needed
     );
   }
-
 }

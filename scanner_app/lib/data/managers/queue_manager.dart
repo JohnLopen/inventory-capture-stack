@@ -87,6 +87,7 @@ class QueueManager {
       try {
         final parts = item.split('|');
         final encryptedData = parts[0];
+        final boxId = parts[1];
         final type = parts.length > 2 ? parts[2] : 'text';
 
         if (type == 'image') {
@@ -94,7 +95,7 @@ class QueueManager {
           final imagePath = encrypter.decrypt64(encryptedData, iv: iv);
 
           // Send image to API
-          await captureService.upload(imagePath);
+          await captureService.upload(int.parse(boxId), imagePath);
           itemsToRemove.add(item);
 
           // Delete image file after successful upload

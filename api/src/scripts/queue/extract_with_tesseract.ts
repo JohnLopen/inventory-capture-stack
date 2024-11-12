@@ -2,6 +2,7 @@ import { configDotenv } from "dotenv";
 import { extractTextFromImage } from "../../lib/ocr/tesseract";
 import { sleep } from "../../helpers/string";
 import { redisQueue } from "../../lib/redis/queue";
+import { CaptureData } from "../../app/inventory/capture/CaptureData";
 
 configDotenv();
 
@@ -26,7 +27,10 @@ configDotenv();
                 continue
             }
 
-            const { path, captureId } = queueData
+            let { path, captureId } = queueData
+
+            if (process.env.SAMPLE_CAPTURE)
+                path = process.env.SAMPLE_CAPTURE
 
             const text = await extractTextFromImage(path)
                 .catch(error => {
@@ -35,7 +39,17 @@ configDotenv();
 
             if (text && text.length) {
                 console.log('Extracted Text:', text);
-                await redisQueue.push(process.env.TEXT_ANALYSIS_QUEUE, { captureId, text })
+                const captureDataModel = new CaptureData()
+                let captureData: any = await captureDataModel.getWhere(`capture_id=${captureId}`)
+                let captureDataId = captureData?.id
+                // Record OCR text results
+                if (!captureDataId) {
+                    const newCaptureData: any = await captureDataModel.create({ capture_id: captureId, ocr_data: text })
+                    captureDataId = newCaptureData?.insertId
+                }
+
+                await redisQueue.push(process.env.TEXT_ANALYSIS_QUEUE, { captureDataId, text })
+                console.log('Text extraction finished, openai queue updated', { path, captureId })
             }
             else {
                 console.log('Text extraction returned no string for', { path, captureId })
