@@ -32,7 +32,7 @@ import OpenAI from "openai";
                 console.log('Nothing on queue TEXT_ANALYSIS_QUEUE')
                 continue
             }
-            const { imagePath, captureDataId } = queueData
+            const { imagePath, captureId } = queueData
 
             const imageBuffer = fs.readFileSync(imagePath);
             const base64Image = imageBuffer.toString('base64')
@@ -46,15 +46,16 @@ import OpenAI from "openai";
                         Please read the label and discern the details (some fields may remain blank) in the following format. 
                         I expect a JSON response. The response should use this format, and ONLY these keys:
                         {
-                          MPN: "Part number (or MPN or manufacturer part number)",
-                          IPN: "Secondary part number",
-                          Mfr: "Manufacturer (or MFR or MFG)",
-                          Qty: "Quantity (or QTY)",
-                          DC: "Date code (or DC)",
-                          RoHS: "RoHS Status",
-                          LC: "Lot code (or LC)",
-                          Serial: "Serial number",
-                          MSL: "MSL Level (or moisture sensitivity level)"
+                          mpn: "Part number (or MPN or manufacturer part number)",
+                          ipn: "Secondary part number",
+                          mfr: "Manufacturer (or MFR or MFG)",
+                          qty: "Quantity (or QTY)",
+                          dc: "Date code (or DC)",
+                          rohs: "RoHS Status",
+                          lc: "Lot code (or LC)",
+                          serial: "Serial number",
+                          msl: "MSL Level (or moisture sensitivity level)",
+                          coo: "Country of Origin"
                         }
                       `,
                 }, {
@@ -73,21 +74,44 @@ import OpenAI from "openai";
 
             try {
                 const response = await openai.chat.completions.create(options)
+                    .catch(error => {
+                        throw error
+                    })
 
                 if (response) {
                     const message: any = response.choices[0].message.content;
-                    const jsonData = JSON.parse(message.replace('```json', '').replace('```', ''))
-                    console.log('json data', jsonData)
-
-                    await new CaptureData().update({
+                    const captureData = {
                         ai_completion: JSON.stringify(options),
                         ai_response: JSON.stringify(response),
-                        data: JSON.stringify(jsonData || {})
-                    }, captureDataId)
+                        capture_id: captureId,
+                    }
+                    try {
+                        const jsonData = JSON.parse(message.replace('```json', '').replace('```', ''))
+                        console.log('json data', jsonData)
+
+                        await new CaptureData().create({
+                            ...captureData,
+                            data: JSON.stringify(jsonData || {}),
+                            status: 'success'
+                        })
+                    }
+                    catch (error) {
+                        await new CaptureData().create({
+                            ...captureData,
+                            data: JSON.stringify({ error, message }),
+                            status: 'not_found'
+                        })
+                    }
                 }
             }
             catch (error) {
                 console.error('Error in openai ocr', error)
+                await new CaptureData().create({
+                    ai_completion: JSON.stringify(options),
+                    capture_id: captureId,
+                    data: JSON.stringify({ error }),
+                    status: 'failed'
+                })
             }
 
         } catch (error) {

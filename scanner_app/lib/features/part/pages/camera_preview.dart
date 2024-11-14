@@ -7,8 +7,9 @@ import 'package:path_provider/path_provider.dart';
 
 class CameraXPreview extends StatefulWidget {
   final int partId;
+  final VoidCallback onNextPart;
 
-  const CameraXPreview({super.key, required this.partId});
+  const CameraXPreview({super.key, required this.partId, required this.onNextPart});
 
   @override
   CameraExampleState createState() => CameraExampleState();
@@ -70,7 +71,7 @@ class CameraExampleState extends State<CameraXPreview> {
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Container(
-            width: MediaQuery.of(context).size.width * 0.8,
+            width: MediaQuery.of(context).size.width * 0.95,
             padding: const EdgeInsets.all(8.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -87,7 +88,7 @@ class CameraExampleState extends State<CameraXPreview> {
                   borderRadius: BorderRadius.circular(5),
                   child: Image.file(
                     File(imagePath),
-                    height: MediaQuery.of(context).size.height * 0.6,
+                    height: MediaQuery.of(context).size.height * 0.7,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -95,25 +96,46 @@ class CameraExampleState extends State<CameraXPreview> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.cloud_upload, color: Colors.green,),
-                      onPressed: () {
-                        captureService.upload(widget.partId, imagePath);
-                        Navigator.of(context).pop();
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   const SnackBar(content: Text("Image will be uploaded in the background")),
-                        // );
-                        // Add your upload function here
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.cancel, color: Colors.red),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
+                    TextButton(
+                        onPressed: () {
+                          captureService.upload(widget.partId, imagePath);
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Save & Add More')),
+                    TextButton(
+                        onPressed: () {
+                          captureService.upload(widget.partId, imagePath);
+                          Navigator.of(context).pop();
+                          widget.onNextPart();
+                        },
+                        child: const Text('Next Part')),
+                    TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancel')),
                   ],
-                ),
+                )
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //   children: [
+                //     IconButton(
+                //       icon: const Icon(Icons.cloud_upload, color: Colors.green,),
+                //       onPressed: () {
+                //         captureService.upload(widget.partId, imagePath);
+                //         Navigator.of(context).pop();
+                //         // ScaffoldMessenger.of(context).showSnackBar(
+                //         //   const SnackBar(content: Text("Image will be uploaded in the background")),
+                //         // );
+                //         // Add your upload function here
+                //       },
+                //     ),
+                //     IconButton(
+                //       icon: const Icon(Icons.cancel, color: Colors.red),
+                //       onPressed: () {
+                //         Navigator.of(context).pop();
+                //       },
+                //     ),
+                //   ],
+                // ),
               ],
             ),
           ),

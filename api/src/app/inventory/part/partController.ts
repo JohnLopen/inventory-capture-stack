@@ -25,7 +25,7 @@ export class PartController {
     static async postPart(req: Request, res: Response) {
         const { box_id }: any = req.body
         const partModel = new Part()
-        const parts = await partModel.count()
+        const parts: number | null = await partModel.count()
 
         if (!box_id) {
             res.status(500).send({ message: 'Box ID is required' })
@@ -34,8 +34,8 @@ export class PartController {
 
         const newPart: any = await new Part().create({
             box_id,
-            send_to_ai: !parts ? 1 : 0,
-            label: !parts ? 'LABEL PHOTO' : 'ADDITIONAL PHOTOS'
+            // send_to_ai: !parts ? 1 : 0,
+            label: `Part ${(parts || 0) + 1}`
         })
         console.log('New part', newPart)
 

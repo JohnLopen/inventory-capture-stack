@@ -10,8 +10,9 @@ import 'camera_preview.dart';
 
 class ScannerHome extends StatefulWidget {
   final Part part;
+  final VoidCallback onNextPart;
 
-  const ScannerHome({super.key, required this.part});
+  const ScannerHome({super.key, required this.part, required this.onNextPart});
 
   @override
   ScannerHomeState createState() => ScannerHomeState();
@@ -42,7 +43,9 @@ class ScannerHomeState extends State<ScannerHome> {
   
   Future<void> startCameraPreview() async {
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => CameraXPreview(partId: widget.part.id!)),
+      MaterialPageRoute(builder: (context) => CameraXPreview(
+          partId: widget.part.id!,
+      onNextPart: widget.onNextPart,)),
     );
     _getCaptures();
   }

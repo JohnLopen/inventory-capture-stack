@@ -109,7 +109,7 @@ class BoxDetailScreenState extends State<BoxDetailScreen> {
           ? ListView.builder(
         itemCount: parts.length,
         itemBuilder: (context, index) {
-          final box = parts[index];
+          final part = parts[index];
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             elevation: 5,
@@ -119,13 +119,16 @@ class BoxDetailScreenState extends State<BoxDetailScreen> {
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               title: Text(
-                '${box.label} (${box.captures.length} ${box.captures.length > 1 ? 'captures' : 'capture'})',
+                '${part.label} (${part.captures.length} ${part.captures.length > 1 ? 'captures' : 'capture'})',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               onTap: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => ScannerHome(part: box)),
+                  MaterialPageRoute(builder: (_) => ScannerHome(
+                      part: part,
+                    onNextPart: () => _createNewPart(context),
+                  )),
                 );
                 _getParts();  // Refresh box list after navigation
               },
@@ -153,7 +156,10 @@ class BoxDetailScreenState extends State<BoxDetailScreen> {
       if (context.mounted) {
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ScannerHome(part: Part.fromJson(data['part']))),
+          MaterialPageRoute(builder: (_) => ScannerHome(
+              part: Part.fromJson(data['part']),
+            onNextPart: () => _createNewPart(context),
+          )),
         );
         _getParts();  // Fetch the updated list of boxes
       }

@@ -14,17 +14,18 @@
         }
 
         .container {
-            max-width: 1200px;
-            margin: 20px auto;
+            margin: 0;
             padding: 20px;
             background: #fff;
-            border-radius: 10px;
+            border-radius: 0;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
             color: #007BFF;
+            padding-top: 0;
+            margin-top: 0;
         }
 
         table {
@@ -99,28 +100,34 @@
                     <th>Box</th>
                     <th>Part</th>
                     <th>Picture</th>
-                    <th>Part Number</th>
-                    <th>Quantity</th>
-                    <th>Date</th>
+                    <th>MPN</th>
+                    <th>Secondary PN</th>
+                    <th>Manufacturer</th>
+                    <th>Qty</th>
+                    <th>DC</th>
+                    <th>Serial/Lot #</th>
+                    <th>COO<br/>(Country of Origin)</th>
+                    <th>RoHS<br/>(Restriction of Hazardous<br/>Substances Compliance)</th>
+                    <th>MSL<br/>(Moisture Sensitivity Level)</th>
                 </tr>
             </thead>
             <tbody>
                 <% projects.forEach(project => { %>
                     <tr class="project-row">
-                        <td colspan="7">Project <%= project.id %>: <%= project.label %> (Last Updated: <%= project.last_updated %>)</td>
+                        <td colspan="13">Project <%= project.id %>: <%= project.label %> (Last Updated: <%= project.last_updated %>)</td>
                     </tr>
                     <% project.boxes.forEach(box => { %>
                         <tr class="box-row">
                             <td class="nested-cell"></td>
                             <td><%= box.label %></td>
-                            <td colspan="5"></td>
+                            <td colspan="11"></td>
                         </tr>
                         <% box.parts.forEach(part => { %>
                             <tr class="part-row">
                                 <td class="nested-cell"></td>
                                 <td class="nested-cell"></td>
                                 <td><%= part.label %></td>
-                                <td colspan="4"></td>
+                                <td colspan="10"></td>
                             </tr>
                             <% part.captures.forEach(picture => { %>
                                 <tr class="picture-row">
@@ -128,11 +135,17 @@
                                     <td class="nested-cell"></td>
                                     <td class="nested-cell"></td>
                                     <td>
-                                        <a href="#" data-picture="<%= capture_base %>/uploads/<%= picture.filename %>">Picture <%= picture.id %></a> (Taken: <%= picture.taken_on %>)
+                                        <a href="#" data-picture="<%= capture_base %>/uploads/<%= picture.filename %>">Picture <%= picture.id %></a><br/>(Taken: <%= picture.taken_on %>)
                                     </td>
-                                    <td><%= picture.capture_data.data.MPN %></td>
-                                    <td><%= picture.capture_data.data.Qty %></td>
-                                    <td><%= picture.date %></td>
+                                    <td><%= picture.capture_data.data.mpn %></td>
+                                    <td><%= picture.capture_data.data.ipn %></td>
+                                    <td><%= picture.capture_data.data.mfr %></td>
+                                    <td><%= picture.capture_data.data.qty %></td>
+                                    <td><%= picture.capture_data.data.dc %></td>
+                                    <td><%= picture.capture_data.data.serial || picture.capture_data.data.lc %></td>
+                                    <td><%= picture.coo %></td>
+                                    <td><%= picture.rohs %></td>
+                                    <td><%= picture.msl %></td>
                                 </tr>
                             <% }) %>
                         <% }) %>

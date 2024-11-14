@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:id_scanner/services/environment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-String apiBaseUrl = isDev() ? 'http://192.168.254.191:5000' : 'http://44.244.59.28:3000';
+String apiBaseUrl = isDev() ? 'http://192.168.1.29:5000' : 'http://44.244.59.28:3000';
 // String apiBaseUrl = isDev() ? 'http://10.0.2.2:5000' : 'http://44.244.59.28:3000';
 
 class ApiClient {
