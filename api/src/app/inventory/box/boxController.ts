@@ -3,13 +3,14 @@ import BaseModel from '../../../lib/db/BaseModel'
 import { Box } from './Box'
 import { ProjectService } from '../project/projectService'
 import { now } from '../../../helpers/date'
+import { BoxService } from './boxService'
 
 export class BoxController {
 
     static async get(req: Request, res: Response) {
         const { project_id } = req.query
         const boxes = await new Box().getWhere(`project_id=${project_id}`)
-        const count = await new BaseModel('box').count(true, { project_id })
+        const count = await new Box().count(true, { project_id })
         res.status(200).json({ boxes, count })
     }
 
@@ -40,6 +41,23 @@ export class BoxController {
         await ProjectService.update({ updated_at: now() }, project_id)
 
         res.status(200).json({ box: await new Box().find(newBox?.insertId) })
+    }
+
+    static async updateBox(req: Request, res: Response) {
+        const { label, id }: any = req.body
+
+        if (!label) {
+            res.status(500).send({ message: 'Box label is required' })
+            return
+        }
+        const box = await new Box().find(id)
+
+        await BoxService.update({ label }, id)
+        await ProjectService.update({ updated_at: now() }, box.project_id)
+
+        console.log('Box updated',)
+
+        res.status(200).json({})
     }
 
     static async getCount(req: Request, res: Response) {

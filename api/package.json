@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "ts-node-dev src/server.ts",
+    "frontend": "ts-node-dev src/frontend/app.ts",
     "generatePassword": "ts-node-dev src/scripts/generatePassword.ts",
     "generateToken": "ts-node-dev src/scripts/generateToken.ts",
     "generateApiKey": "ts-node-dev src/scripts/generateApiKey.ts",
@@ -14,6 +15,7 @@
     "openai_text_analysis": "ts-node-dev src/scripts/queue/openai_text_analysis.ts",
     "test_image_to_queue": "ts-node-dev src/scripts/test/test_image_to_queue.ts",
     "clear_queue": "ts-node-dev src/scripts/test/clear_queue.ts",
+    "openai_ocr": "ts-node-dev src/scripts/queue/openai_ocr.ts",
     "build": "tsc",
     "deploy": "cd deployment && ./deploy.sh"
   },

@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:id_scanner/data/services/inventory/box_service.dart';
 import 'package:id_scanner/data/services/inventory/project_service.dart';
+import 'package:id_scanner/features/boxes/pages/box_detail.dart';
 
 import '../../boxes/box.dart';
-import '../../scanners/pages/scanner_home.dart';
 import '../project.dart';
 
 class ProjectDetailScreen extends StatefulWidget {
@@ -94,7 +94,10 @@ class ProjectDetailScreenState extends State<ProjectDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,  // Matching login color scheme
-        title: Text('${widget.project.label} Boxes', style: const TextStyle(color: Colors.white)),
+        title: GestureDetector(
+          child: Text(widget.project.label, style: const TextStyle(color: Colors.white)),
+          onTap: () => _updateProjectLabel(),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit, size: 16, color: Colors.white,),
@@ -116,13 +119,13 @@ class ProjectDetailScreenState extends State<ProjectDetailScreen> {
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 20),
               title: Text(
-                '${box.label} (${box.captures.length} ${box.captures.length > 1 ? 'captures' : 'capture'})',
+                '${box.label} (${box.parts.length} ${box.parts.length > 1 ? 'parts' : 'part'})',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               onTap: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => ScannerHome(box: box)),
+                  MaterialPageRoute(builder: (_) => BoxDetailScreen(box)),
                 );
                 _getBoxes();  // Refresh box list after navigation
               },
@@ -130,7 +133,10 @@ class ProjectDetailScreenState extends State<ProjectDetailScreen> {
           );
         },
       )
-          : const Center(child: Text('Add a new box to begin', style: TextStyle(color: Colors.blueAccent))),
+          : Center(child: GestureDetector(
+        child: const Text('Add a new box to begin', style: TextStyle(color: Colors.blueAccent)),
+        onTap: () => _createNewBox(context),
+      )),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueAccent,  // Matching login color scheme
         child: const Icon(Icons.add_box, color: Colors.white),
@@ -147,7 +153,7 @@ class ProjectDetailScreenState extends State<ProjectDetailScreen> {
       if (context.mounted) {
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ScannerHome(box: Box.fromJson(data['box']))),
+          MaterialPageRoute(builder: (_) => BoxDetailScreen(Box.fromJson(data['box']))),
         );
         _getBoxes();  // Fetch the updated list of boxes
       }

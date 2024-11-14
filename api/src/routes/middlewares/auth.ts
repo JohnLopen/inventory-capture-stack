@@ -2,27 +2,16 @@ import { configDotenv } from 'dotenv';
 configDotenv()
 
 // src/middleware/authMiddleware.ts
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../../app/user/User';
+import { AuthenticatedRequest } from '../globals';
 
 const { JWT_SECRET } = process.env;
 
 if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not defined in the environment variables.');
 }
-
-export interface AuthenticatedRequest extends Request {
-    user: User;
-}
-
-declare global {
-    namespace Express {
-      interface Request {
-        user: User; // Adjust the type to whatever your decoded JWT contains
-      }
-    }
-  }
 
 export const authenticateJWT = (
     req: AuthenticatedRequest,

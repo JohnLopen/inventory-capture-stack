@@ -67,3 +67,6 @@ coverage/
 *.swp
 *.swo
 *.sh
+*.pem
+*.jpg
+*.sql

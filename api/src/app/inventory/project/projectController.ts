@@ -6,6 +6,10 @@ import { ProjectService } from './projectService'
 import { Box } from '../box/Box'
 import { CaptureData } from '../capture/CaptureData'
 
+//DO NOT REMOVE
+import * as globals from '../../../routes/globals'
+import { Part } from '../part/Part'
+
 export class ProjectController {
 
     static async get(req: Request, res: Response) {
@@ -74,23 +78,28 @@ export class ProjectController {
             project.boxes = await new Box().getWhere(`project_id=${project.id}`)
             console.log('project.boxes', project.boxes)
             project.last_updated = formatDate(project.updated_at, 'lll')
+
             for (let box of project.boxes) {
-                for (let capture of box.captures) {
-                    capture.taken_on = formatDate(capture.created_at, 'lll')
-                    capture.capture_data = await new CaptureData().findWhere('capture_id', capture.id)
-                    if (capture.capture_data?.id) {
-                        capture.capture_data.data = JSON.parse(capture.capture_data.data || '{}')
+                const parts: any = await new Part().getWhere(`box_id=${box.id}`)
+                box.parts = parts
+                for (const part of parts) {
+                    for (let capture of part.captures) {
+                        capture.taken_on = formatDate(capture.created_at, 'lll')
+                        capture.capture_data = await new CaptureData().findWhere('capture_id', capture.id)
+                        if (capture.capture_data?.id) {
+                            capture.capture_data.data = JSON.parse(capture.capture_data.data || '{}')
+                        }
+                        else
+                            capture.capture_data = { data: {} }
+                        console.log('capture.capture_data', capture.capture_data)
                     }
-                    else
-                        capture.capture_data = { data: {} }
-                    console.log('capture.capture_data', capture.capture_data)
                 }
             }
         }
         // res.status(200).json(projects)
         // return
 
-        res.render('inventory/projects', { projects });
+        res.render('projects', { projects, capture_base: process.env.CAPTURE_BASE_URL });
 
     }
 

@@ -19,7 +19,7 @@ class CaptureService extends ApiClient {
   }
 
   // Function to send image file to API using HTTP
-  Future<bool> upload(int boxId, String imagePath) async {
+  Future<bool> upload(int partId, String imagePath) async {
     try {
       final token = await _getToken(); // Fetch the token
       final uri = Uri.parse(super.baseUrl);
@@ -28,7 +28,7 @@ class CaptureService extends ApiClient {
       // Add token to the Authorization header
       request.headers['Authorization'] = token;
 
-      request.fields.addAll({'boxId': boxId.toString()});
+      request.fields.addAll({'partId': partId.toString()});
       request.files.add(await http.MultipartFile.fromPath('file', imagePath));
 
       final response = await request.send();

@@ -86,7 +86,10 @@ class ProjectListScreenState extends State<ProjectListScreen> {
           );
         },
       )
-          : const Center(child: Text('Add a new project to begin', style: TextStyle(color: Colors.blueAccent))),
+          : Center(child: GestureDetector(
+        child: const Text('Add a new project to begin', style: TextStyle(color: Colors.blueAccent)),
+        onTap: () => _createNewProject(context),
+      )),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blueAccent, // Matching login color scheme
         child: const Icon(Icons.add, color: Colors.white),
