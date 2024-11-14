@@ -21,7 +21,7 @@ class ScannerHome extends StatefulWidget {
 class ScannerHomeState extends State<ScannerHome> {
   late List<Capture> captures = []; // Holds the boxes for the current project
   late int captureCount;
-  
+
   // Method to fetch the boxes and their captures
   void _getCaptures() {
     CaptureService().get(params: {'part_id': widget.part.id.toString()}).then((response) {
@@ -40,12 +40,12 @@ class ScannerHomeState extends State<ScannerHome> {
       log('Error fetching captures: $error');
     });
   }
-  
+
   Future<void> startCameraPreview() async {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => CameraXPreview(
-          partId: widget.part.id!,
-      onNextPart: widget.onNextPart,)),
+        part: widget.part,
+        onNextPart: widget.onNextPart,)),
     );
     _getCaptures();
   }
@@ -60,66 +60,98 @@ class ScannerHomeState extends State<ScannerHome> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,  // Matching the blue accent color from the login page
-        title: Text(
-          widget.part.label,
-          style: const TextStyle(color: Colors.white),  // White text for the AppBar
-        )
+          backgroundColor: Colors.blueAccent,
+          title: Text(
+            widget.part.label,
+            style: const TextStyle(color: Colors.white),
+          )
       ),
       body: captures.isNotEmpty
           ? GridView.builder(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,  // Number of columns in the grid
-          crossAxisSpacing: 4.0,  // Space between columns
-          mainAxisSpacing: 4.0,  // Space between rows
-          childAspectRatio: 1.0,  // Aspect ratio of the grid items
+          crossAxisCount: 3,
+          crossAxisSpacing: 4.0,
+          mainAxisSpacing: 4.0,
+          childAspectRatio: 1.0,
         ),
         itemCount: captures.length,
         itemBuilder: (context, index) {
           final capture = captures[index];
-          final imagePath = '$apiBaseUrl/uploads/${capture.filename}';  // Construct the image path
+          final imagePath = '$apiBaseUrl/uploads/${capture.filename}';
 
           return GestureDetector(
             onTap: () {
-              // Handle image tap if needed, like viewing full-size image
+              // Handle image tap if needed
             },
             child: Card(
-              elevation: 4.0,  // Slight elevation for better visibility
-              child: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Image.network(
-                  imagePath,  // Load image from network
-                  fit: BoxFit.cover,  // Ensure the image covers the thumbnail area
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.broken_image,  // Material icon for image error
-                      size: 50,  // Icon size
-                      color: Colors.grey,  // Icon color
-                    );
-                  },
-                ),
+              elevation: 4.0,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Image.network(
+                      imagePath,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.broken_image,
+                          size: 40,
+                          color: Colors.grey,
+                        );
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 4.0,
+                    left: 4.0,
+                    right: 4.0,
+                    child: Container(
+                      color: Colors.black.withOpacity(0.6),
+                      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
+                      child: Text(
+                        capture.isLabelPhoto == 1 ? 'LABEL PICTURE' : 'SUPPLEMENTAL',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
         },
       )
-          :  Center(child: GestureDetector(
-        child: const Text('Nothing captured for this part.', style: TextStyle(color: Colors.blueAccent)),
-        onTap: () => startCameraPreview(),
-      ) ),
+          : Center(
+        child: GestureDetector(
+          child: const Text(
+            'Nothing captured for this part.',
+            style: TextStyle(color: Colors.blueAccent),
+          ),
+          onTap: () => startCameraPreview(),
+        ),
+      ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 40.0), // Adjust this to elevate the button
+        padding: const EdgeInsets.only(bottom: 40.0),
         child: FloatingActionButton(
           heroTag: 'camera',
-          backgroundColor: Colors.blueAccent,  // Match the color of the AppBar
+          backgroundColor: Colors.blueAccent,
           onPressed: () => startCameraPreview(),
           child: const Icon(
             Icons.camera,
-            color: Colors.white,  // White icon for better contrast
+            color: Colors.white,
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked, // Adjust location if needed
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }

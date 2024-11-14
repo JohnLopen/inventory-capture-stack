@@ -66,11 +66,11 @@ class LoginPageState extends State<LoginPage> {
               children: [
                 const SizedBox(height: 50),
                 // Add the logo here
-                Image.network(
-                  '$apiBaseUrl/images/logo/logo-main.png',
-                  width: MediaQuery.of(context).size.width * 0.6, // Set the desired width
-                  // height: 100, // Set the desired height
-                ),
+                // Image.network(
+                //   '$apiBaseUrl/images/logo/logo-main.png',
+                //   width: MediaQuery.of(context).size.width * 0.6, // Set the desired width
+                //   // height: 100, // Set the desired height
+                // ),
                 const SizedBox(height: 50),
                 Container(
                   decoration: BoxDecoration(

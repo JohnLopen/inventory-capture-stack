@@ -86,11 +86,20 @@ export class ProjectController {
                     for (let capture of part.captures) {
                         capture.taken_on = formatDate(capture.created_at, 'lll')
                         capture.capture_data = await new CaptureData().findWhere('capture_id', capture.id)
+                        if (!capture.is_label_photo) {
+                            capture.capture_data = { data: {} }
+                            continue
+                        }
                         if (capture.capture_data?.id) {
-                            capture.capture_data.data = JSON.parse(capture.capture_data.data || '{}')
+                            const parsedData = JSON.parse(capture.capture_data.data || '{}')
+                            if (capture.capture_data.status == 'success')
+                                capture.capture_data.data = parsedData
+                            else {
+                                capture.capture_data.data = { mpn: capture.capture_data.status.replace('_', ' ') }
+                            }
                         }
                         else
-                            capture.capture_data = { data: {} }
+                            capture.capture_data = { data: { mpn: 'pending' } }
                         console.log('capture.capture_data', capture.capture_data)
                     }
                 }

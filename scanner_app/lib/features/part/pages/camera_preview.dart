@@ -1,15 +1,18 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:id_scanner/data/services/inventory/capture_service.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../part.dart';
+
 class CameraXPreview extends StatefulWidget {
-  final int partId;
+  final Part part;
   final VoidCallback onNextPart;
 
-  const CameraXPreview({super.key, required this.partId, required this.onNextPart});
+  const CameraXPreview({super.key, required this.part, required this.onNextPart});
 
   @override
   CameraExampleState createState() => CameraExampleState();
@@ -19,10 +22,23 @@ class CameraExampleState extends State<CameraXPreview> {
   CaptureService captureService = CaptureService();
   CameraController? _cameraController;
   List<CameraDescription>? cameras;
+  late int captureCount = 0;
+
+  // Method to fetch the boxes and their captures
+  void _getCaptures() {
+    CaptureService().get(params: {'part_id': widget.part.id.toString()}).then((response) {
+      setState(() {
+        captureCount = response['count'];
+      });
+    }).catchError((error) {
+      log('Error fetching captures: $error');
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    _getCaptures();
     _initializeCamera();
   }
 
@@ -88,7 +104,7 @@ class CameraExampleState extends State<CameraXPreview> {
                   borderRadius: BorderRadius.circular(5),
                   child: Image.file(
                     File(imagePath),
-                    height: MediaQuery.of(context).size.height * 0.7,
+                    height: MediaQuery.of(context).size.height * 0.65,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -98,13 +114,14 @@ class CameraExampleState extends State<CameraXPreview> {
                   children: [
                     TextButton(
                         onPressed: () {
-                          captureService.upload(widget.partId, imagePath);
+                          captureService.upload(widget.part.id, imagePath);
+                          _getCaptures();
                           Navigator.of(context).pop();
                         },
                         child: const Text('Save & Add More')),
                     TextButton(
                         onPressed: () {
-                          captureService.upload(widget.partId, imagePath);
+                          captureService.upload(widget.part.id, imagePath);
                           Navigator.of(context).pop();
                           widget.onNextPart();
                         },
@@ -114,28 +131,6 @@ class CameraExampleState extends State<CameraXPreview> {
                         child: const Text('Cancel')),
                   ],
                 )
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //   children: [
-                //     IconButton(
-                //       icon: const Icon(Icons.cloud_upload, color: Colors.green,),
-                //       onPressed: () {
-                //         captureService.upload(widget.partId, imagePath);
-                //         Navigator.of(context).pop();
-                //         // ScaffoldMessenger.of(context).showSnackBar(
-                //         //   const SnackBar(content: Text("Image will be uploaded in the background")),
-                //         // );
-                //         // Add your upload function here
-                //       },
-                //     ),
-                //     IconButton(
-                //       icon: const Icon(Icons.cancel, color: Colors.red),
-                //       onPressed: () {
-                //         Navigator.of(context).pop();
-                //       },
-                //     ),
-                //   ],
-                // ),
               ],
             ),
           ),
@@ -156,7 +151,7 @@ class CameraExampleState extends State<CameraXPreview> {
       return const Center(child: CircularProgressIndicator());
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('Inventory Capture')),
+      appBar: AppBar(title: Text('${widget.part.label}: ${captureCount == 0 ? 'LABEL' : 'SUPPLEMENTAL (${captureCount + 1})'}')),
       body: Column(
         children: [
           Expanded(
