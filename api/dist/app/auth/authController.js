@@ -5,8 +5,8 @@ const userService_1 = require("../user/userService");
 const helper_1 = require("./helper");
 class AuthController {
     static async login(req, resp) {
-        const { email, password } = req.body;
-        const user = await userService_1.UserService.getByUsername(email);
+        const { username, password } = req.body;
+        const user = await userService_1.UserService.getByUsername(username);
         console.log('user', user);
         if (!user) {
             resp.sendStatus(403);

@@ -7,10 +7,9 @@ const express_1 = require("express");
 const captureController_1 = require("./captureController");
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
-const api_1 = require("../../../routes/middlewares/api");
 const captureRoutes = (0, express_1.Router)();
 // Guard route with api key
-captureRoutes.use(api_1.apiKeyMiddleware);
+// captureRoutes.use(apiKeyMiddleware)
 // Configure Multer storage
 const storage = multer_1.default.diskStorage({
     destination: (req, file, cb) => {
@@ -24,5 +23,6 @@ const storage = multer_1.default.diskStorage({
 // Initialize multer with the storage configuration
 const uploader = (0, multer_1.default)({ storage });
 // Capture routes
-captureRoutes.post('/capture', uploader.single('file'), captureController_1.CaptureController.upload);
+captureRoutes.get('/', captureController_1.CaptureController.get);
+captureRoutes.post('/', uploader.single('file'), captureController_1.CaptureController.upload);
 exports.default = captureRoutes;

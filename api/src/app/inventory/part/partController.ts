@@ -25,7 +25,7 @@ export class PartController {
     static async postPart(req: Request, res: Response) {
         const { box_id }: any = req.body
         const partModel = new Part()
-        const parts: number | null = await partModel.count()
+        const parts: number | null = await partModel.count(false, { box_id })
 
         if (!box_id) {
             res.status(500).send({ message: 'Box ID is required' })

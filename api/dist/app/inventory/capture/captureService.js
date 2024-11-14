@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CaptureService = void 0;
 class CaptureService {
+    static extractData(ai_response) {
+        throw new Error("Method not implemented.");
+    }
     /**
      *
      * @param req

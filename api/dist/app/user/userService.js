@@ -8,8 +8,8 @@ class UserService {
      * @param email
      * @returns
      */
-    static getByUsername(email) {
-        return new User_1.User().findWhere('username', email);
+    static getByUsername(username) {
+        return new User_1.User().findWhere('username', username);
     }
     /**
      *

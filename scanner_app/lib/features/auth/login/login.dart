@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:id_scanner/core/data/base_api.dart';
 import 'package:id_scanner/data/services/inventory/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/data/base_api.dart';
 import '../../projects/pages/project_list.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,45 +18,66 @@ class LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   bool _isObscure = true; // To toggle password visibility
+  bool _isLoading = false; // To show loading indicator
 
   // Simulate a login attempt
   void _login() {
     if (_formKey.currentState!.validate()) {
-      // Perform login (in a real app, connect to backend here)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Logging in...')),
-      );
+      setState(() {
+        _isLoading = true;
+      });
 
       AuthService()
-          .post(endpoint: '/login', body: {'username': _usernameController.text, 'password': _passwordController.text})
+          .post(endpoint: '/login', body: {
+        'username': _usernameController.text,
+        'password': _passwordController.text
+      })
           .then((data) async {
-        print('login response: $data');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login successful')),
-        );
         final prefs = await SharedPreferences.getInstance();
-
         await prefs.setString('jwt_token', data['token']);
+
+        setState(() {
+          _isLoading = false;
+        });
 
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const ProjectListScreen()),
         );
       }).catchError((error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed', style: TextStyle(color: Colors.redAccent))),
-        );
+        setState(() {
+          _isLoading = false;
+        });
+        _showErrorDialog('Login failed');
       });
     }
+  }
+
+  // Error dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // appBar: AppBar(
-      //   title: const Text('Inventory Capture (Beta)'),
-      // ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
@@ -66,11 +87,11 @@ class LoginPageState extends State<LoginPage> {
               children: [
                 const SizedBox(height: 50),
                 // Add the logo here
-                // Image.network(
-                //   '$apiBaseUrl/images/logo/logo-main.png',
-                //   width: MediaQuery.of(context).size.width * 0.6, // Set the desired width
-                //   // height: 100, // Set the desired height
-                // ),
+                Image.network(
+                  '$apiBaseUrl/images/logo/logo-main.png',
+                  width: MediaQuery.of(context).size.width * 0.6, // Set the desired width
+                  // height: 100, // Set the desired height
+                ),
                 const SizedBox(height: 50),
                 Container(
                   decoration: BoxDecoration(
@@ -153,7 +174,7 @@ class LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 30),
                           ElevatedButton(
-                            onPressed: _login,
+                            onPressed: _isLoading ? null : _login,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blueAccent,
                               padding: const EdgeInsets.symmetric(vertical: 15),
@@ -161,7 +182,13 @@ class LoginPageState extends State<LoginPage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                              valueColor:
+                              AlwaysStoppedAnimation<Color>(
+                                  Colors.white),
+                            )
+                                : const Text(
                               'Login',
                               style: TextStyle(
                                 fontSize: 18,
@@ -170,16 +197,16 @@ class LoginPageState extends State<LoginPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 15),
-                          TextButton(
-                            onPressed: () {
-                              // Navigate to a "forgot password" page or other options
-                            },
-                            child: const Text(
-                              'Forgot Password?',
-                              style: TextStyle(color: Colors.blueAccent),
-                            ),
-                          ),
+                          // const SizedBox(height: 15),
+                          // TextButton(
+                          //   onPressed: () {
+                          //     // Navigate to a "forgot password" page or other options
+                          //   },
+                          //   child: const Text(
+                          //     'Forgot Password?',
+                          //     style: TextStyle(color: Colors.blueAccent),
+                          //   ),
+                          // ),
                         ],
                       ),
                     ),

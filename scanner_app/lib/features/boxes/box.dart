@@ -10,8 +10,6 @@ class Box {
 
   factory Box.fromJson(Map<String, dynamic> json) {
     // Debug output to check the structure of json['captures']
-    print('Raw captures JSON: ${json['parts']}');
-
     return Box(
       id: json['id'] as int?,
       label: json['label'] as String,

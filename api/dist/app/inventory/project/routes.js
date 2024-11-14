@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const projectController_1 = require("./projectController");
+const projectRoutes = (0, express_1.Router)();
+projectRoutes.get('/', projectController_1.ProjectController.get);
+projectRoutes.post('/', projectController_1.ProjectController.postProject);
+projectRoutes.get('/:projectId/details', projectController_1.ProjectController.getProject);
+projectRoutes.put('/:projectId/update', projectController_1.ProjectController.updateProject);
+projectRoutes.get('/count', projectController_1.ProjectController.getCount);
+exports.default = projectRoutes;

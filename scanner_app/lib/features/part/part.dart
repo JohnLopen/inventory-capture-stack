@@ -10,8 +10,6 @@ class Part {
 
   factory Part.fromJson(Map<String, dynamic> json) {
     // Debug output to check the structure of json['captures']
-    print('Raw captures JSON: ${json['captures']}');
-
     return Part(
       id: json['id'] as int,
       label: json['label'] as String,

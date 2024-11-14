@@ -13,7 +13,8 @@ export class CaptureController {
         const { part_id } = req.query
         const captures = await new Capture().getWhere(`part_id=${part_id}`)
         const count = await new Capture().count(false, { part_id })
-        res.status(200).json({ captures, count })
+        const countSupplemental = await new Capture().count(false, { part_id, is_label_photo: 0 })
+        res.status(200).json({ captures, count, countSupplemental })
     }
 
     /**

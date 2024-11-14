@@ -9,14 +9,14 @@ const auth_1 = require("./middlewares/auth");
 const routes_2 = __importDefault(require("../app/auth/routes"));
 const routes_3 = __importDefault(require("../app/inventory/routes"));
 const mainRouter = (0, express_1.Router)();
+// External checking endpoint
+mainRouter.get("/health", async (req, res) => {
+    res.status(200).send({ status: 'OK' });
+});
 // App routes
 // User
 mainRouter.use('/auth', routes_2.default);
 mainRouter.use('/users', auth_1.authenticateJWT, routes_1.default);
-// External checking endpoint
-mainRouter.get("/heartbeat", async (req, res) => {
-    res.status(200).send({ status: 'OK' });
-});
 // Inventory routes
 mainRouter.use('/inventory', routes_3.default);
 exports.default = mainRouter;

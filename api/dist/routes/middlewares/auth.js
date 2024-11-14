@@ -12,7 +12,7 @@ if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not defined in the environment variables.');
 }
 const authenticateJWT = (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1];
+    const token = req.header('Authorization');
     if (!token) {
         res.status(401).json({ message: 'Access token missing' });
         return; // Ensure we return here to prevent further execution

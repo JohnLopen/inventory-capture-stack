@@ -23,12 +23,21 @@ class CameraExampleState extends State<CameraXPreview> {
   CameraController? _cameraController;
   List<CameraDescription>? cameras;
   late int captureCount = 0;
+  late int countSupplemental = 0;
+  late bool isLoading = false;
+
+  void _setLoading(bool loading) {
+    setState(() {
+      isLoading=loading;
+    });
+  }
 
   // Method to fetch the boxes and their captures
   void _getCaptures() {
     CaptureService().get(params: {'part_id': widget.part.id.toString()}).then((response) {
       setState(() {
         captureCount = response['count'];
+        countSupplemental = response['countSupplemental'];
       });
     }).catchError((error) {
       log('Error fetching captures: $error');
@@ -78,7 +87,13 @@ class CameraExampleState extends State<CameraXPreview> {
     }
   }
 
+  void _onNextPart() {
+    Navigator.of(context).pop();
+    widget.onNextPart();
+  }
+
   void _showImagePreviewDialog(String imagePath) {
+    BuildContext mainContext = context;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -109,25 +124,42 @@ class CameraExampleState extends State<CameraXPreview> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Row(
+                if(isLoading)
+                  const Text('Uploading...')
+                else
+                  Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     TextButton(
                         onPressed: () {
-                          captureService.upload(widget.part.id, imagePath);
-                          _getCaptures();
-                          Navigator.of(context).pop();
+                          _setLoading(true);
+                          captureService.upload(widget.part.id, imagePath)
+                            .then((response) {
+                            _getCaptures();
+                            _setLoading(false);
+                            if(context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          });
                         },
                         child: const Text('Save & Add More')),
                     TextButton(
                         onPressed: () {
-                          captureService.upload(widget.part.id, imagePath);
-                          Navigator.of(context).pop();
-                          widget.onNextPart();
+                          _setLoading(true);
+                          captureService.upload(widget.part.id, imagePath)
+                              .then((response) {
+                            if(context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                            _onNextPart();
+                          });
                         },
                         child: const Text('Next Part')),
                     TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          _getCaptures();
+                        },
                         child: const Text('Cancel')),
                   ],
                 )
@@ -151,7 +183,7 @@ class CameraExampleState extends State<CameraXPreview> {
       return const Center(child: CircularProgressIndicator());
     }
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.part.label}: ${captureCount == 0 ? 'LABEL' : 'SUPPLEMENTAL (${captureCount + 1})'}')),
+      appBar: AppBar(title: Text('${widget.part.label}: ${captureCount == 0 ? 'LABEL' : 'SUPPLEMENTAL (${countSupplemental+1})'}')),
       body: Column(
         children: [
           Expanded(
