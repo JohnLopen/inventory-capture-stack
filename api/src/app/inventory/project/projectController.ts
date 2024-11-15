@@ -70,7 +70,64 @@ export class ProjectController {
         res.status(200).json({ projects })
     }
 
-    static async view(req: Request, res: Response) {
+    static async viewProjectBoxes(req: Request, res: Response) {
+        const { projectId }: any = req.params
+
+        const project = await new Project().find(projectId)
+        if (!project?.id)
+            return res.redirect('/')
+
+        project.boxes = await new Box().getWhere(`project_id=${project.id}`)
+        console.log('project.boxes', project.boxes)
+        project.last_updated = formatDate(project.updated_at, 'lll')
+
+        for (let box of project.boxes) {
+            const parts: any = await new Part().getWhere(`box_id=${box.id}`)
+            box.parts = parts
+            for (const part of parts) {
+                for (let capture of part.captures) {
+                    capture.taken_on = formatDate(capture.created_at, 'lll')
+                    capture.capture_data = await new CaptureData().findWhere('capture_id', capture.id)
+                    if (!capture.is_label_photo) {
+                        capture.capture_data = { ...capture.capture_data, status: '', data: {} }
+                        continue
+                    }
+                    if (capture.capture_data?.id) {
+                        const parsedData = JSON.parse(capture.capture_data.data || '{}')
+                        if (capture.capture_data.status == 'edited') {
+                            capture.capture_data.status = 'Manually Edited'
+                            capture.capture_data.data = parsedData
+                        }
+                        else if (capture.capture_data.status == 'approved') {
+                            capture.capture_data.status = 'Approved'
+                            capture.capture_data.data = parsedData
+                        }
+                        else if (capture.capture_data.status == 'success') {
+                            capture.capture_data.status = 'Found Items'
+                            capture.capture_data.data = parsedData
+                        }
+                        else if (capture.capture_data.status == 'failed')
+                            capture.capture_data = { data: {}, status: 'Failed' }
+                        else if (capture.capture_data.status == 'not_found')
+                            capture.capture_data = { ...capture.capture_data, status: 'No Found Items', data: {} }
+                        else
+                            capture.capture_data = { ...capture.capture_data, status: 'Unknown', data: {} }
+                    }
+                    else
+                        capture.capture_data = { ...capture.capture_data, status: 'Pending', data: {} }
+                    console.log('capture.capture_data', capture.capture_data)
+                }
+            }
+        }
+
+        // res.status(200).json(projects)
+        // return
+
+        res.render('boxes', { project, capture_base: process.env.CAPTURE_BASE_URL });
+
+    }
+
+    static async viewProjects(req: Request, res: Response) {
         const { user } = req.query
 
         let projects: any = await new Project().getWhere(`user_id=${user}`, true)
@@ -79,36 +136,22 @@ export class ProjectController {
             console.log('project.boxes', project.boxes)
             project.last_updated = formatDate(project.updated_at, 'lll')
 
+            let partsCount = 0;
+            let capturesCount = 0
             for (let box of project.boxes) {
                 const parts: any = await new Part().getWhere(`box_id=${box.id}`)
                 box.parts = parts
+                partsCount += parts.length
                 for (const part of parts) {
-                    for (let capture of part.captures) {
-                        capture.taken_on = formatDate(capture.created_at, 'lll')
-                        capture.capture_data = await new CaptureData().findWhere('capture_id', capture.id)
-                        if (!capture.is_label_photo) {
-                            capture.capture_data = { data: {} }
-                            continue
-                        }
-                        if (capture.capture_data?.id) {
-                            const parsedData = JSON.parse(capture.capture_data.data || '{}')
-                            if (capture.capture_data.status == 'success')
-                                capture.capture_data.data = parsedData
-                            else {
-                                capture.capture_data.data = { mpn: capture.capture_data.status.replace('_', ' ') }
-                            }
-                        }
-                        else
-                            capture.capture_data = { data: { mpn: 'pending' } }
-                        console.log('capture.capture_data', capture.capture_data)
-                    }
+                    capturesCount += part.captures.length
                 }
             }
-        }
-        // res.status(200).json(projects)
-        // return
 
-        res.render('projects', { projects, capture_base: process.env.CAPTURE_BASE_URL });
+            project.parts = partsCount
+            project.captures = capturesCount
+        }
+
+        res.render('projects', { projects });
 
     }
 

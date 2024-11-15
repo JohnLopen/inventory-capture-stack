@@ -1,4 +1,5 @@
 import BaseModel from "../../../lib/db/BaseModel";
+import { CaptureData } from "./CaptureData";
 
 export interface Capture {
     id?: number;
@@ -16,5 +17,9 @@ export interface Capture {
 export class Capture extends BaseModel {
     constructor() {
         super('capture')
+
+        this.relationships = {
+            'capture_data': { type: 'hasOne', foreignKey: 'capture_id', model: CaptureData },
+        }
     }
 }

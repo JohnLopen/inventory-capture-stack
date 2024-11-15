@@ -1,16 +1,14 @@
-export class CaptureService {
+import { Capture } from "./Capture";
 
-    static extractData(ai_response: any): any {
-        throw new Error("Method not implemented.");
-    }
+export class CaptureService {
 
     /**
      * 
      * @param req 
      * @param resp 
      */
-    static async processOcr(file: any) {
-        return true
+    static getCapture(captureId: number) {
+        return new Capture().find(captureId)
     }
 
 }

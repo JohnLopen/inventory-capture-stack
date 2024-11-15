@@ -6,6 +6,8 @@ import { ProjectService } from '../project/projectService';
 import { now } from '../../../helpers/date';
 import { Part } from '../part/Part';
 import { CaptureData } from './CaptureData';
+import { CaptureService } from './captureService';
+import { rotateImageInPlace } from '../../../helpers/image';
 
 export class CaptureController {
 
@@ -86,6 +88,39 @@ export class CaptureController {
                 file: req.file,
             });
         }
+    }
+
+    /**
+     * 
+     * @param req 
+     * @param res 
+     */
+    static async getCapture(req: Request, res: Response) {
+        const { captureId }: any = req.params
+        res.status(200).json(await CaptureService.getCapture(captureId))
+    }
+
+    static async postCaptureData(req: Request, res: Response) {
+        const { captureId }: any = req.params
+        console.log({ captureId, data: req.body })
+        const captureData = await new CaptureData().findWhere('capture_id', captureId)
+
+        await new CaptureData().update({ status: 'edited', data: JSON.stringify(req.body) }, captureData?.id)
+
+        res.status(200).json({})
+    }
+
+    static async postRotateCapture(req: Request, res: Response) {
+        const { captureId, clockwise }: any = req.params
+        const capture = await new Capture().find(captureId)
+        await rotateImageInPlace(capture.path, Boolean(clockwise))
+            .then(() => {
+                res.status(200).json({})
+            })
+            .catch((error) => {
+                console.error({ error, captureId, clockwise })
+                res.status(500).json({ error: 'Unable to rotate image' })
+            })
     }
 
 }

@@ -1,12 +1,11 @@
 import { configDotenv } from 'dotenv';
 configDotenv()
 
-import express, { Request, Response, Router } from 'express';
+import express, { json, urlencoded } from 'express';
 import cors from 'cors';
-import { ProjectController } from '../app/inventory/project/projectController';
 import path from 'path';
+import mainRouter from './routes';
 
-const mainRouter = Router();
 
 const mainApp = express();
 
@@ -14,26 +13,12 @@ const mainApp = express();
 mainApp.set('view engine', 'ejs');
 mainApp.set('views', path.join(__dirname, 'views'));  // Assumes views will be in src/views directory
 
+// Middleware for parsing JSON and URL-encoded data with large upload limits
+mainApp.use(json({ limit: '50mb' }));
+mainApp.use(urlencoded({ extended: true, limit: '50mb' }));
+
 // Middleware to enable CORS
 mainApp.use(cors());
-
-// Main Routes
-// External checking endpoint
-mainRouter.get(
-    "/health",
-    async (req: Request, res: Response) => {
-        res.status(200).send({ status: 'OK' })
-    }
-)
-
-mainRouter.get(
-    "/",
-    async (req: Request, res: Response) => {
-        res.render('home');
-    }
-)
-
-mainRouter.get('/projects', ProjectController.view)
 
 mainApp.use(mainRouter);
 

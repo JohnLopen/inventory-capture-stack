@@ -36,7 +36,7 @@ import OpenAI from "openai";
             const imageBuffer = fs.readFileSync(imagePath);
             const base64Image = imageBuffer.toString('base64')
 
-            const options: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+            let options: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
                 model: "gpt-4o",
                 messages: [{
                     role: "system",
@@ -50,8 +50,7 @@ import OpenAI from "openai";
                           qty: "Quantity (or QTY)",
                           dc: "Date code (or DC) which should be written in one of two ways: 1) YYWW format where YY equals a 2 digit year code and WW equals a 2 digit week code, 2) Traditional date format",
                           rohs: "RoHS Status",
-                          lc: "Lot code (or LC)",
-                          serial: "Serial number",
+                          serial: "Serial number (or Serial)/Lot code (or LC), must be combined value of serial and LC, or formatted as Serial/LC",
                           msl: "MSL Level (or moisture sensitivity level)",
                           coo: "Country of Origin"
                         }
@@ -74,6 +73,10 @@ import OpenAI from "openai";
                     .catch(error => {
                         throw error
                     })
+
+                // Remove base64 image url from inserting into the db
+                let content: any = options!.messages[1].content
+                content[0].image_url.url = ''
 
                 if (response) {
                     const message: any = response.choices[0].message.content;
@@ -115,7 +118,7 @@ import OpenAI from "openai";
             console.error('Failed to extract text:', error);
         }
 
-        if (process.env.NODE_ENV == 'development')
-            break
+        // if (process.env.NODE_ENV == 'development')
+        //     break
     }
 })();

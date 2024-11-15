@@ -34,7 +34,8 @@
             margin-top: 20px;
         }
 
-        th, td {
+        th,
+        td {
             padding: 8px;
             border: 1px solid #ddd;
             text-align: left;
@@ -50,7 +51,9 @@
             font-weight: bold;
         }
 
-        .box-row, .part-row, .picture-row {
+        .box-row,
+        .part-row,
+        .picture-row {
             background-color: #ffffff;
         }
 
@@ -92,98 +95,42 @@
 
 <body>
     <div class="container">
-        <h1>Inventory Capture Projects</h1>
+        <h1>
+            <img src="https://inventorycapture.com/api/images/logo/logo-main.png" width="256px" />
+        </h1>
         <table>
             <thead>
                 <tr>
-                    <th>Project</th>
-                    <th>Box</th>
-                    <th>Part</th>
-                    <th>Picture</th>
-                    <th>MPN</th>
-                    <th>Secondary PN</th>
-                    <th>Manufacturer</th>
-                    <th>Qty</th>
-                    <th>DC</th>
-                    <th>Serial/Lot #</th>
-                    <th>COO<br/>(Country of Origin)</th>
-                    <th>RoHS<br/>(Restriction of Hazardous<br/>Substances Compliance)</th>
-                    <th>MSL<br/>(Moisture Sensitivity Level)</th>
+                    <th>Project #</th>
+                    <th>Project Name</th>
+                    <th>Boxes</th>
+                    <th>Parts</th>
+                    <th>Photos</th>
                 </tr>
             </thead>
             <tbody>
-                <% projects.forEach(project => { %>
+                <% projects.forEach(project=> { %>
                     <tr class="project-row">
-                        <td colspan="13">Project <%= project.id %>: <%= project.label %> (Last Updated: <%= project.last_updated %>)</td>
+                        <td>
+                            <%= project.id %>
+                        </td>
+                        <td><a href="projects/<%= project.id %>/boxes">
+                                <%= project.label %>
+                            </a></td>
+                        <td>
+                            <%= project.boxes.length %>
+                        </td>
+                        <td>
+                            <%= project.parts %>
+                        </td>
+                        <td>
+                            <%= project.captures %>
+                        </td>
                     </tr>
-                    <% project.boxes.forEach(box => { %>
-                        <tr class="box-row">
-                            <td class="nested-cell"></td>
-                            <td><%= box.label %></td>
-                            <td colspan="11"></td>
-                        </tr>
-                        <% box.parts.forEach(part => { %>
-                            <tr class="part-row">
-                                <td class="nested-cell"></td>
-                                <td class="nested-cell"></td>
-                                <td><%= part.label %></td>
-                                <td colspan="10"></td>
-                            </tr>
-                            <% part.captures.forEach(picture => { %>
-                                <tr class="picture-row">
-                                    <td class="nested-cell"></td>
-                                    <td class="nested-cell"></td>
-                                    <td class="nested-cell"></td>
-                                    <td>
-                                        <a href="#" data-picture="<%= capture_base %>/uploads/<%= picture.filename %>">Picture <%= picture.id %></a><br/>(Taken: <%= picture.taken_on %>)
-                                    </td>
-                                    <td><%= picture.capture_data.data.mpn %></td>
-                                    <td><%= picture.capture_data.data.ipn %></td>
-                                    <td><%= picture.capture_data.data.mfr %></td>
-                                    <td><%= picture.capture_data.data.qty %></td>
-                                    <td><%= picture.capture_data.data.dc %></td>
-                                    <td><%= picture.capture_data.data.serial || picture.capture_data.data.lc %></td>
-                                    <td><%= picture.coo %></td>
-                                    <td><%= picture.rohs %></td>
-                                    <td><%= picture.msl %></td>
-                                </tr>
-                            <% }) %>
-                        <% }) %>
                     <% }) %>
-                <% }) %>
             </tbody>
         </table>
     </div>
-
-    <!-- Lightbox Structure -->
-    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
-        <span class="close" onclick="closeLightbox()">&times;</span>
-        <img id="lightbox-image" src="" alt="Picture">
-    </div>
-
-    <script>
-        // Lightbox logic
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImage = document.getElementById('lightbox-image');
-
-        function showLightbox(imageUrl) {
-            lightboxImage.src = imageUrl;
-            lightbox.style.display = 'flex';
-        }
-
-        function closeLightbox() {
-            lightbox.style.display = 'none';
-            lightboxImage.src = '';
-        }
-
-        document.querySelectorAll('[data-picture]').forEach(link => {
-            link.addEventListener('click', function(event) {
-                event.preventDefault();
-                const imageUrl = this.getAttribute('data-picture');
-                showLightbox(imageUrl);
-            });
-        });
-    </script>
 </body>
 
 </html>

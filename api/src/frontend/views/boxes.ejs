@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Capture Boxes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            margin: 0;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #007BFF;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: #fff;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            max-width: 650px;
+            max-height: 90%;
+            background-color: white;
+            border: 2px solid #007BFF;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .lightbox img {
+            max-width: 100%;
+            max-height: 50vh;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+            min-height: 200px;
+        }
+
+        .lightbox .close {
+            position: fixed;
+            /* Change to fixed */
+            top: 10px;
+            /* Distance from the top of the viewport */
+            right: 10px;
+            /* Distance from the right of the viewport */
+            font-size: 24px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: #007BFF;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            border-radius: 2px;
+            z-index: 2000;
+            /* Ensure it stays on top */
+        }
+
+        .editable-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .editable-table td {
+            padding: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .editable-fields input {
+            width: calc(100% - 30px);
+            padding: 10px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .submit-container,
+        .submit-container button {
+            width: 100%;
+            margin: 20px auto;
+            margin-bottom: 0;
+            display: block;
+        }
+
+        .submit-container button {
+            padding: 12px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .submit-container button.disabled {
+            color: #333;
+            background-color: #8ac1fb;
+        }
+
+        .capture-rotate,
+        .capture-rotate button {
+            display: block;
+        }
+
+        .capture-rotate button {
+            background-color: #999;
+            color: #333;
+            margin: auto;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 2px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>
+            <img src="https://inventorycapture.com/api/images/logo/logo-main.png" width="256px" />
+        </h1>
+        <h1>
+            <%= project.label %> Boxes
+        </h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Box</th>
+                    <th>Part</th>
+                    <th>Status</th>
+                    <th>Picture</th>
+                    <th>MPN</th>
+                    <th>Secondary PN</th>
+                    <th>Manufacturer</th>
+                    <th>Qty</th>
+                    <th>DC</th>
+                    <th>Serial/Lot #</th>
+                    <th>COO</th>
+                    <th>RoHS</th>
+                    <th>MSL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% project.boxes.forEach(box=> { %>
+                    <tr class="box-row">
+                        <td colspan="13">
+                            <%= box.label %>
+                        </td>
+                    </tr>
+                    <% box.parts.forEach(part=> { %>
+                        <tr class="part-row">
+                            <td class="nested-cell"></td>
+                            <td colspan="12">
+                                <%= part.label %>
+                            </td>
+                        </tr>
+                        <% part.captures.forEach(picture=> { %>
+                            <tr class="picture-row">
+                                <td class="nested-cell"></td>
+                                <td class="nested-cell"></td>
+                                <td class="nested-cell">
+                                    <%= picture.capture_data.status %>
+                                </td>
+                                <td>
+                                    <a href="#" data-capture="<%= picture.id %>" data-picture>Picture <%= picture.id %>
+                                    </a><br />(Taken: <%= picture.taken_on %>)
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.mpn %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.ipn %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.mfr %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.qty %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.dc %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.serial %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.coo %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.rohs %>
+                                </td>
+                                <td>
+                                    <%= picture.capture_data.data.msl %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                                <% }) %>
+                                    <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Lightbox Structure -->
+    <div class="lightbox" id="lightbox">
+        <span class="close" onclick="closeLightbox()">&times;</span>
+        <img id="lightbox-image" src="" alt="Picture">
+        <div class="capture-rotate">
+            <button type="button" onclick="rotateCapture()">Rotate Image</button>
+        </div>
+        <table class="editable-table editable-fields">
+            <tbody>
+                <tr>
+                    <td>MPN:</td>
+                    <td><input data-mpn data-type="mpn" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>Secondary PN:</td>
+                    <td><input data-ipn data-type="ipn" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>Manufacturer:</td>
+                    <td><input data-mfr data-type="mfr" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>Qty:</td>
+                    <td><input data-qty data-type="qty" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>DC:</td>
+                    <td><input data-dc data-type="dc" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>Serial/Lot #:</td>
+                    <td><input data-serial data-type="serial" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>COO:</td>
+                    <td><input data-coo data-type="coo" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>RoHS:</td>
+                    <td><input data-rohs data-type="rohs" type="text" value=""></td>
+                </tr>
+                <tr>
+                    <td>MSL:</td>
+                    <td><input data-msl data-type="msl" type="text" value=""></td>
+                </tr>
+
+            </tbody>
+        </table>
+        <div class="submit-container">
+            <button type="button" class="disabled" id="submit" disabled onclick="submitData()">SUBMIT</button>
+        </div>
+    </div>
+
+    <script>
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightbox-image');
+        var submit = document.getElementById('submit')
+        var captureData, captureId
+
+        function showLightbox(imageUrl) {
+            lightboxImage.src = imageUrl;
+            lightbox.style.display = 'block';
+        }
+
+        function closeLightbox() {
+            lightbox.style.display = 'none';
+            lightboxImage.src = '';
+        }
+
+        async function getCapture() {
+            const _captureData = await fetch(`/capture/${captureId}`)
+                .then(response => response.json());
+            try {
+                // Update image
+                const src = `<%= capture_base %>/uploads/${_captureData.filename}?t=${new Date().getTime()}`
+                console.log({ src })
+                lightbox.querySelector('img').src = src
+
+                captureData = JSON.parse(_captureData.capture_data.data || '{}')
+                const keys = Object.keys(captureData)
+                console.log('Capture Data', { captureData, keys });
+
+                if (keys.length) {
+                    for (const key of keys) {
+                        try {
+                            console.log(key, captureData[key])
+                            const input = document.querySelector(`[data-${key}]`)
+                            if (input)
+                                input.value = captureData[key] || ''
+                        }
+                        catch (err) {
+                            console.log({ err, key, value: captureData[key] })
+                        }
+                    }
+                }
+            }
+            catch (error) {
+                console.log(error)
+            }
+        }
+
+        document.querySelectorAll('[data-picture]').forEach(link => {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                const imageUrl = this.getAttribute('data-picture');
+                showLightbox(imageUrl);
+                captureId = this.getAttribute('data-capture');
+                getCapture();
+            });
+        });
+
+        document.querySelectorAll('.editable-fields input').forEach(input => {
+            input.addEventListener('keydown', function (event) {
+                console.log('test')
+                submit.disabled = false
+                submit.classList.remove('disabled')
+            });
+            input.addEventListener('change', function (event) {
+                const type = this.getAttribute('data-type');
+                captureData[type] = this.value
+            });
+        });
+
+        async function submitData() {
+            console.log('Submitting')
+            submit.classList.add('disabled')
+            submit.disabled = true
+            submit.innerText = 'Please wait...'
+
+            const _captureData = await fetch(`/capture/${captureId}`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json" // Set content type to JSON
+                },
+                body: JSON.stringify(captureData)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        submit.innerText = 'SUBMIT'
+                        alert('Your changes have been saved into database.')
+                        closeLightbox()
+                        location.reload()
+                    }
+                }).catch(() => {
+                    submit.disabled = false
+                    alert('Unable to save your changes.')
+                })
+        }
+
+        async function rotateCapture() {
+            const _captureData = await fetch(`/capture/${captureId}/rotate`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json" // Set content type to JSON
+                },
+                body: JSON.stringify({ clockwise: true })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        const img = lightbox.querySelector('img')
+                        const src = img.src.split('?').shift()
+                        img.src = `${src}?t=${new Date().getTime()}`
+                    }
+                }).catch(() => {
+                    alert('Unable to rotate image.')
+                })
+        }
+    </script>
+</body>
+
+</html>
