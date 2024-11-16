@@ -17,6 +17,9 @@ mainApp.set('views', path.join(__dirname, 'views'));  // Assumes views will be i
 mainApp.use(json({ limit: '50mb' }));
 mainApp.use(urlencoded({ extended: true, limit: '50mb' }));
 
+mainApp.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+mainApp.use('/public', express.static(path.join(__dirname, 'public')));
+
 // Middleware to enable CORS
 mainApp.use(cors());
 

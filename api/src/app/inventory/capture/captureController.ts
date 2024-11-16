@@ -7,7 +7,7 @@ import { now } from '../../../helpers/date';
 import { Part } from '../part/Part';
 import { CaptureData } from './CaptureData';
 import { CaptureService } from './captureService';
-import { rotateImageInPlace } from '../../../helpers/image';
+import { getImageDimensions, rotateImageInPlace } from '../../../helpers/image';
 
 export class CaptureController {
 
@@ -97,15 +97,22 @@ export class CaptureController {
      */
     static async getCapture(req: Request, res: Response) {
         const { captureId }: any = req.params
-        res.status(200).json(await CaptureService.getCapture(captureId))
+        const capture = await CaptureService.getCapture(captureId)
+        const dimension = await getImageDimensions(capture.path)
+        const part = await new Part().find(capture.part_id)
+        res.status(200).json({ capture, part, dimension })
     }
 
     static async postCaptureData(req: Request, res: Response) {
         const { captureId }: any = req.params
         console.log({ captureId, data: req.body })
-        const captureData = await new CaptureData().findWhere('capture_id', captureId)
+        const captureDataModel = new CaptureData()
+        const captureData = await captureDataModel.findWhere('capture_id', captureId)
 
-        await new CaptureData().update({ status: 'edited', data: JSON.stringify(req.body) }, captureData?.id)
+        if (captureData?.id)
+            await captureDataModel.update({ status: 'edited', data: JSON.stringify(req.body) }, captureData?.id)
+        else
+            await captureDataModel.create({ capture_id: captureId, data: JSON.stringify(req.body), status: 'edited' })
 
         res.status(200).json({})
     }

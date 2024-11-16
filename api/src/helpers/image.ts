@@ -1,6 +1,7 @@
 import path from "node:path";
 import sharp from "sharp";
 import fs from 'fs'
+
 /**
  * Rotates an image by 90 degrees clockwise or counterclockwise and overwrites the original file.
  * @param imagePath - Path to the image to be rotated.
@@ -26,3 +27,18 @@ export const rotateImageInPlace = async (imagePath: string, clockwise: boolean =
         console.error("Error rotating image:", error);
     }
 }
+
+/**
+ * Get the image dimension (width, height)
+ * @param imagePath 
+ * @returns 
+ */
+export const getImageDimensions = async (imagePath: string) => {
+    try {
+        const { width, height } = await sharp(imagePath).metadata();
+        console.log(`Width: ${width}, Height: ${height}`);
+        return { width, height };
+    } catch (err) {
+        console.error('Error reading image dimensions:', err);
+    }
+};

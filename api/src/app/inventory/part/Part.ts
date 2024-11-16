@@ -13,7 +13,8 @@ export class Part extends BaseModel {
     constructor() {
         super('part')
         this.relationships = {
-            'captures': { type: 'hasMany', foreignKey: 'part_id', model: Capture },
+            'label_capture': { type: 'hasOne', foreignKey: 'part_id', model: Capture, filter: { 'is_label_photo': 1 } },
+            'supplement_captures': { type: 'hasMany', foreignKey: 'part_id', model: Capture, filter: { 'is_label_photo': 0 } },
         }
     }
 }

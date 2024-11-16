@@ -16,7 +16,7 @@
     "test_image_to_queue": "ts-node-dev src/scripts/test/test_image_to_queue.ts",
     "clear_queue": "ts-node-dev src/scripts/test/clear_queue.ts",
     "openai_ocr": "ts-node-dev src/scripts/queue/openai_ocr.ts",
-    "build": "tsc",
+    "build": "tsc; ./copy.sh",
     "deploy": "cd deployment && ./deploy.sh"
   },
   "keywords": [],

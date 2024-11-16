@@ -1,0 +1,161 @@
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    max-width: 650px;
+    max-height: 90%;
+    height: auto;
+    background-color: white;
+    border: 2px solid #007BFF;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    flex-direction: column;
+}
+
+.lightbox[data-orientation="landscape"] .image-container {
+    display: none;
+}
+
+.lightbox[data-orientation="landscape"] .lightbox-contents>img,
+.lightbox[data-orientation="landscape"] .lightbox-contents>.capture-rotate {
+    display: block;
+}
+
+.lightbox[data-orientation="portrait"] .image-container {
+    display: block;
+}
+
+.lightbox[data-orientation="portrait"] .lightbox-contents {
+    flex-direction: row;
+    gap: 20px;
+}
+
+.lightbox[data-orientation="portrait"] .editable-table {
+    margin-top: 0;
+}
+
+.lightbox[data-orientation="portrait"] .lightbox-contents>img,
+.lightbox[data-orientation="portrait"] .lightbox-contents>.capture-rotate {
+    display: none;
+}
+
+.lightbox-contents {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.lightbox img {
+    max-width: 100%;
+    max-height: 50vh;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+    min-height: 200px;
+    /* max-width: 768px; */
+}
+
+.lightbox .title h2 {
+    font-size: 14px;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    color: #007BFF;
+}
+
+.lightbox .title {
+    display: block;
+    position: relative;
+    height: 35px;
+}
+
+.lightbox .close {
+    position: fixed;
+    /* Change to fixed */
+    top: 10px;
+    /* Distance from the top of the viewport */
+    right: 10px;
+    /* Distance from the right of the viewport */
+    font-size: 24px;
+    color: #007BFF;
+    cursor: pointer;
+    font-weight: bold;
+    width: 30px;
+    height: 30px;
+    text-align: center;
+    z-index: 2000;
+    /* Ensure it stays on top */
+}
+
+.editable-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    flex: 1;
+}
+
+.editable-table td {
+    padding: 0px 5px;
+    border: 1px solid #ddd;
+}
+
+.editable-fields input {
+    width: calc(100% - 30px);
+    padding: 5px 0;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.editable-fields input:focus-visible {
+    border: none !important;
+    outline: none !important;
+}
+
+.submit-container,
+.submit-container button {
+    width: 100%;
+    display: block;
+}
+
+.submit-container button {
+    margin-top: 20px;
+    padding: 12px;
+    color: #fff;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.submit-container button.disabled {
+    color: #333;
+    background-color: #8ac1fb;
+}
+
+.capture-rotate,
+.capture-rotate button {
+    display: block;
+}
+
+.capture-rotate button {
+    background-color: #999;
+    color: #333;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 2px;
+}
+
+button {
+    cursor: pointer;
+}
