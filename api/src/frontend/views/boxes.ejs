@@ -5,8 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Capture Boxes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" 
+        crossorigin="anonymous" 
+        referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/public/css/styles.css" />
     <link rel="stylesheet" href="/public/css/popup.css" />
+    <link rel="stylesheet" href="/public/css/nav.css" />
 </head>
 
 <body>
@@ -14,9 +19,11 @@
         <h1>
             <img src="https://inventorycapture.com/api/images/logo/logo-main.png" width="256px" />
         </h1>
-        <h3>
-            <%= project.label %> Boxes
-        </h3 st>
+        <nav class="breadcrumb">
+            <a href="/"><i class="fa-solid fa-home"></i> Home</a> <i class="fa-solid fa-chevron-right"></i>
+            <a href="/<%= user %>/projects">Projects</a> <i class="fa-solid fa-chevron-right"></i>
+            <span>Boxes</span>
+        </nav>
         <div class="table-container">
             <table>
                 <thead>
@@ -36,95 +43,107 @@
                         <th>MSL</th>
                     </tr>
                 </thead>
-                <% project.boxes.forEach(box=> { %>
-                    <tbody class="collapsed">
-                        <tr class="box-row">
-                            <td colspan="13">
-                                <a class="collapsible"  data-target="part-row-<%= box.id %>" href="javascript:void(0)"><%= box.label %></a>
-                            </td>
-                        </tr>
-                        <% box.parts.forEach(part=> { %>
-                            <tr class="part-row part-row-<%= box.id %>">
-                                <td class="nested-cell"></td>
-                                <td colspan="12">
-                                    <%= part.label %>
+                    <% project.boxes.forEach(box=> { %>
+                        <tbody class="collapsed">
+                            <tr class="box-row">
+                                <td colspan="13">
+                                    <a class="collapsible" data-target="part-row-<%= box.id %>" href="javascript:void(0)">
+                                        <span><%= box.label %></span>
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </a>
                                 </td>
                             </tr>
-                            <%- generateCaptureRow(box.id, part.id, part.label_capture) %>
-                            <% if(part.supplement_captures?.length) { %>
+                            <% box.parts.forEach(part=> { %>
                                 <tr class="part-row part-row-<%= box.id %>">
-                                    <td class="nested-cell" colspan="3"></td>
-                                    <td colspan="10">
-                                        <a href="javascript:void(0)" class="collapsible" data-target="part-supplemental-<%= part.id %>">SUPPLEMENTAL (<%= part.supplement_captures?.length %>)</a>
+                                    <td class="nested-cell"></td>
+                                    <td colspan="12">
+                                        <%= part.label %>
                                     </td>
                                 </tr>
-                            <% } %>
-                            <% part.supplement_captures.forEach((capture, index)=> { %>
-                                <%- generateCaptureRow(box.id, part.id, capture, index) %>
+                                <%- generateCaptureRow(box.id, part.id, part.label_capture) %>
+                                    <% if(part.supplement_captures?.length) { %>
+                                        <tr class="part-row part-row-<%= box.id %> collapsed">
+                                            <td class="nested-cell" colspan="3"></td>
+                                            <td colspan="10">
+                                                <a href="javascript:void(0)" class="collapsible"
+                                                    data-target="part-supplemental-<%= part.id %>">
+                                                    SUPPLEMENTAL (<%= part.supplement_captures?.length %>)</a>
+                                                    <i class="fa-solid fa-chevron-right"></i>
+                                                    <i class="fa-solid fa-chevron-down"></i>
+                                            </td>
+                                        </tr>
+                                        <% } %>
+                                    <% part.supplement_captures.forEach((capture, index)=> { %>
+                                        <%- generateCaptureRow(box.id, part.id, capture, index) %>
+                                    <% }) %>
                             <% }) %>
-                        <% }) %>
                     </tbody>
-                <% }) %>
-            
+                    <% }) %>
             </table>
         </div>
     </div>
 
     <!-- Lightbox Structure -->
-    <div class="lightbox" id="lightbox">
-        <div class="title">
-            <h2></h2>
-            <span class="close" >&times;</span>
-        </div>
-        <div class="lightbox-contents">
-            <img id="lightbox-image" src="" alt="Picture">
-            <div class="image-container">
-                <img id="lightbox-image" src="" alt="Picture">
+    <div class="lightbox-backdrop" id="lightbox-backdrop">
+        <div class="lightbox loading" id="lightbox">
+            <div class="loader">
+                Please wait...
             </div>
-            <table class="editable-table editable-fields">
-                <tbody>
-                    <tr>
-                        <td>DC:</td>
-                        <td><input data-dc data-type="dc" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>MPN:</td>
-                        <td><input data-mpn data-type="mpn" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>Secondary PN:</td>
-                        <td><input data-ipn data-type="ipn" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>Manufacturer:</td>
-                        <td><input data-mfr data-type="mfr" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>Qty:</td>
-                        <td><input data-qty data-type="qty" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>Serial/Lot #:</td>
-                        <td><input data-serial data-type="serial" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>COO:</td>
-                        <td><input data-coo data-type="coo" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>RoHS:</td>
-                        <td><input data-rohs data-type="rohs" type="text" value=""></td>
-                    </tr>
-                    <tr>
-                        <td>MSL:</td>
-                        <td><input data-msl data-type="msl" type="text" value=""></td>
-                    </tr>
+            <div class="title">
+                <h2></h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="lightbox-contents">
+                <img id="lightbox-image" src="" alt="Picture">
+                <div class="image-container">
+                    <img id="lightbox-image" src="" alt="Picture">
+                </div>
+                <table class="editable-table editable-fields">
+                    <tbody>
+                        <tr>
+                            <td>DC:</td>
+                            <td><input data-dc data-type="dc" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>MPN:</td>
+                            <td><input data-mpn data-type="mpn" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>Secondary PN:</td>
+                            <td><input data-ipn data-type="ipn" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>Manufacturer:</td>
+                            <td><input data-mfr data-type="mfr" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>Qty:</td>
+                            <td><input data-qty data-type="qty" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>Serial/Lot #:</td>
+                            <td><input data-serial data-type="serial" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>COO:</td>
+                            <td><input data-coo data-type="coo" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>RoHS:</td>
+                            <td><input data-rohs data-type="rohs" type="text" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>MSL:</td>
+                            <td><input data-msl data-type="msl" type="text" value=""></td>
+                        </tr>
 
-                </tbody>
-            </table>
-        </div>
-        <div class="submit-container">
-            <button type="button" class="disabled submit" disabled>SUBMIT</button>
+                    </tbody>
+                </table>
+            </div>
+            <div class="submit-container">
+                <button type="button" class="disabled submit" disabled>SUBMIT</button>
+            </div>
         </div>
     </div>
 

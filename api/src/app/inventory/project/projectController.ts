@@ -72,7 +72,7 @@ export class ProjectController {
     }
 
     static async viewProjectBoxes(req: Request, res: Response) {
-        const { projectId }: any = req.params
+        const { projectId, user }: any = req.params
 
         const project = await new Project().find(projectId)
         if (!project?.id)
@@ -136,14 +136,14 @@ export class ProjectController {
         // res.status(200).json(project)
         // return
 
-        res.render('boxes', { project, capture_base: process.env.CAPTURE_BASE_URL, generateCaptureRow });
+        res.render('boxes', { user, project, capture_base: process.env.CAPTURE_BASE_URL, generateCaptureRow });
 
     }
 
-    static async viewProjects(req: Request, res: Response) {
-        const { user } = req.query
+    static async viewUserProjects(req: Request, res: Response) {
+        const { user } = req.params
 
-        let projects: any = await new Project().getWhere(`user_id=${user}`, [], true)
+        let projects: any = await new Project().getWhere(`user_id=${user.replace('user-', '')}`, [], true)
         for (let project of projects) {
             project.boxes = await new Box().getWhere(`project_id=${project.id}`)
             console.log('project.boxes', project.boxes)
@@ -166,7 +166,7 @@ export class ProjectController {
             project.captures = capturesCount
         }
 
-        res.render('projects', { projects });
+        res.render('projects', { projects, user });
 
     }
 

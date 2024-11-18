@@ -45,6 +45,7 @@ td {
     padding: 5px;
     border: 1px solid #ddd;
     text-align: left;
+    font-size: small !important;
 }
 
 th {
@@ -59,4 +60,21 @@ th {
 .part-row,
 .part-supplemental {
     display: none;
+}
+
+.box-row .fa-chevron-right,
+.box-row .fa-chevron-down,
+.part-row .fa-chevron-right,
+.part-row .fa-chevron-down {
+    display: none;
+}
+
+tbody.collapsed .box-row .fa-chevron-right:not(.part-row .fa-chevron-right),
+.part-row.collapsed .fa-chevron-right {
+    display: inline-block !important;
+}
+
+tbody.expanded .box-row .fa-chevron-down:not(.part-row .fa-chevron-down),
+.part-row.expanded .fa-chevron-down {
+    display: inline-block !important;
 }

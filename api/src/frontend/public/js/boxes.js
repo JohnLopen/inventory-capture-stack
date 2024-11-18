@@ -1,5 +1,6 @@
 $(function () {
     const lightbox = document.getElementById('lightbox');
+    const lightboxBackdrop = document.getElementById('lightbox-backdrop');
     var captureData,
         capture,
         captureId
@@ -9,41 +10,51 @@ $(function () {
      * @param {*} imageUrl 
      */
     function showLightbox() {
-        lightbox.style.display = 'flex';
+        lightboxBackdrop.style.display = 'flex';
     }
 
     /**
      * 
      */
     function closeLightbox() {
-        lightbox.style.display = 'none';
+        lightboxBackdrop.style.display = 'none';
         $('.lightbox img').attr('src', '');
+        lightbox.classList.remove('loading')
     }
     $('.close').on('click', closeLightbox)
+    $(lightboxBackdrop).on('click', (e) => {
+        const light = $(e.target).closest('.lightbox')
+        if (!light.length)
+            closeLightbox()
+    })
 
     /**
      * 
      */
     async function getCapture() {
         captureData = {}
-        const _capture = await fetch(`/capture/${captureId}`)
-            .then(response => response.json());
-
-        const { dimension } = _capture
-        capture = _capture.capture
+        showLightbox()
 
         try {
+            const _capture = await fetch(`/capture/${captureId}`)
+                .then(response => response.json());
+
+            capture = _capture.capture
+
+            lightbox.classList.remove('loading')
+
             // Update image
             const src = `/uploads/${capture.filename}?t=${new Date().getTime()}`
 
-            // $('.lightbox img').css('display', 'none')
+            // Set the orientation after load
+            $('.lightbox img').get(0).onload = () => {
+                const width = $('.lightbox img').first().get(0).naturalWidth
+                const height = $('.lightbox img').first().get(0).naturalHeight
+                lightbox.setAttribute('data-orientation', width > height ? 'landscape' : 'portrait')
+            }
+
+            // Set image src
             $('.lightbox img').attr('src', src)
-
-            // const { width, height } = dimension
-            const width = $('.lightbox img').first().get(0).naturalWidth
-            const height = $('.lightbox img').first().get(0).naturalHeight
-
-            lightbox.setAttribute('data-orientation', width > height ? 'landscape' : 'portrait')
 
             captureData = JSON.parse(capture.capture_data?.data || '{}')
             const keys = Object.keys(captureData)
@@ -53,8 +64,6 @@ $(function () {
                 const key = $(this).attr('data-type')
                 $(this).val(captureData[key] || '')
             })
-
-            showLightbox()
         }
         catch (error) {
             console.log(error)
@@ -105,6 +114,8 @@ $(function () {
         submit.disabled = true
         submit.innerText = 'Please wait...'
 
+        lightbox.classList.add('loading')
+
         await fetch(`/capture/${captureId}`, {
             method: 'POST',
             headers: {
@@ -122,6 +133,7 @@ $(function () {
             }).catch(() => {
                 submit.disabled = false
                 alert('Unable to save your changes.')
+                lightbox.classList.remove('loading')
             })
     }
     $('.submit').on('click', submitData)
@@ -148,13 +160,21 @@ $(function () {
 
     $('.collapsible').on('click', function () {
         const target = $(this).attr('data-target')
-        if ($(this).closest('tr').hasClass('box-row')) {
-            const classList = $(this).closest('tbody').get(0).classList
-            console.log('classList', classList)
-            if (classList.contains('collapsed'))
-                classList.remove('collapsed')
-            else
-                classList.add('collapsed')
+        let classList
+        if ($(this).closest('tr').hasClass('box-row'))
+            classList = $(this).closest('tbody').get(0).classList
+        else if ($(this).closest('tr').hasClass('part-row'))
+            classList = $(this).closest('tr').get(0).classList
+        else
+            return
+        console.log('classList', classList)
+        if (classList.contains('collapsed')) {
+            classList.remove('collapsed')
+            classList.add('expanded')
+        }
+        else {
+            classList.add('collapsed')
+            classList.remove('expanded')
         }
         $(`.${target}`).toggle()
     })

@@ -1,5 +1,14 @@
-.lightbox {
+.lightbox-backdrop {
     display: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgb(99 99 99 / 59%);
+}
+
+.lightbox {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -158,4 +167,27 @@
 
 button {
     cursor: pointer;
+}
+
+.loader {
+    display: none;
+}
+
+.lightbox.loading .loader {
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    top: 0;
+    right: 0;
+    background-color: #fff;
+    text-align: center;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0.8;
+    font-size: small;
+    font-weight: bold;
 }

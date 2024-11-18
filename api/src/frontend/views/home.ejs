@@ -81,7 +81,7 @@
             
             const userNumber = document.getElementById('userNumber').value;
             if (userNumber) {
-                location.href = `/projects?user=${userNumber}`;
+                location.href = `/user-${userNumber}/projects`;
             } else {
                 alert('Please enter a user number.');
             }

@@ -20,8 +20,8 @@ mainRouter.get(
     }
 )
 
-mainRouter.get('/projects', ProjectController.viewProjects)
-mainRouter.get('/projects/:projectId/boxes', ProjectController.viewProjectBoxes)
+mainRouter.get('/:user/projects', ProjectController.viewUserProjects)
+mainRouter.get('/:user/projects/:projectId/boxes', ProjectController.viewProjectBoxes)
 mainRouter.get('/capture/:captureId', CaptureController.getCapture)
 mainRouter.post('/capture/:captureId', CaptureController.postCaptureData)
 mainRouter.post('/capture/:captureId/rotate', CaptureController.postRotateCapture)
