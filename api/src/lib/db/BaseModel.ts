@@ -1,15 +1,20 @@
 import { now } from '../../helpers/date';
 import { connectionPool } from './mysql2';
 
+export interface Relationship {
+    type: 'hasOne' | 'hasMany' | 'belongsTo';
+    foreignKey: string;
+    model: typeof BaseModel;
+    filter?: Record<string, any>;
+}
+
 class BaseModel {
     table: string = '';
     primary: string = 'id';
     limit: number = 0;
-    // Guarded columns to exclude from results
     guarded: string[] = [];
 
-    // Define relationships
-    relationships: Record<string, { type: 'hasOne' | 'hasMany' | 'belongsTo', foreignKey: string, model: typeof BaseModel }> = {};
+    relationships: Record<string, Relationship> = {};
 
     constructor(table: string, guardedColumns: string[] = []) {
         this.table = table;
@@ -17,40 +22,33 @@ class BaseModel {
     }
 
     public guard(columns: string[]) {
-        this.guarded = [...columns]
-        return this
+        this.guarded = [...columns];
+        return this;
     }
 
-    // Method to construct SELECT statement, excluding guarded columns
     private async getSelectColumns(select: string = '*'): Promise<string> {
         if (select !== '*' || this.guarded.length === 0) return select;
 
-        // Fetch column names from the table
         const query = `SHOW COLUMNS FROM ${this.table}`;
         const columns = await this.executeQuery<any[]>(query);
         const columnsList = columns?.map(col => col.Field);
 
-        // Exclude guarded columns
         const visibleColumns = columnsList?.filter(col => !this.guarded.includes(col));
         return visibleColumns?.join(', ') || '';
     }
 
-    /**
-     * Define a relationship.
-     */
-    hasOne(relatedModel: typeof BaseModel, foreignKey: string, alias: string) {
-        this.relationships[alias] = { type: 'hasOne', foreignKey, model: relatedModel };
+    hasOne(relatedModel: typeof BaseModel, foreignKey: string, alias: string, filter?: Record<string, any>) {
+        this.relationships[alias] = { type: 'hasOne', foreignKey, model: relatedModel, filter };
     }
 
-    hasMany(relatedModel: typeof BaseModel, foreignKey: string, alias: string) {
-        this.relationships[alias] = { type: 'hasMany', foreignKey, model: relatedModel };
+    hasMany(relatedModel: typeof BaseModel, foreignKey: string, alias: string, filter?: Record<string, any>) {
+        this.relationships[alias] = { type: 'hasMany', foreignKey, model: relatedModel, filter };
     }
 
-    belongsTo(relatedModel: typeof BaseModel, foreignKey: string, alias: string) {
-        this.relationships[alias] = { type: 'belongsTo', foreignKey, model: relatedModel };
+    belongsTo(relatedModel: typeof BaseModel, foreignKey: string, alias: string, filter?: Record<string, any>) {
+        this.relationships[alias] = { type: 'belongsTo', foreignKey, model: relatedModel, filter };
     }
 
-    // Fetch related data for a row based on defined relationships
     private async fetchRelationshipsForRow(row: any) {
         for (const alias in this.relationships) {
             const relationship = this.relationships[alias];
@@ -58,26 +56,35 @@ class BaseModel {
         }
     }
 
-    // Fetch relationship data based on type
-    private async fetchRelationship(row: any, relationship: { type: string, foreignKey: string, model: typeof BaseModel }) {
+    private async fetchRelationship(row: any, relationship: Relationship) {
         const relatedModel = new relationship.model(relationship.model.prototype.table);
-        const foreignKeyValue = row[relationship.foreignKey];
 
-        if (!foreignKeyValue) return relationship.type === 'hasMany' ? [] : null;
+        const baseFilter: Record<string, any> = {};
+        if (relationship.type === 'hasOne' || relationship.type === 'hasMany') {
+            baseFilter[relationship.foreignKey] = row[this.primary];
+        } else if (relationship.type === 'belongsTo') {
+            baseFilter[this.primary] = row[relationship.foreignKey];
+        }
+
+        // Combine base filter with the relationship's filter
+        const combinedFilter = { ...baseFilter, ...relationship.filter };
+        const whereClause = Object.keys(combinedFilter)
+            .map(key => `${key} = ?`)
+            .join(' AND ');
+        const whereParams = Object.values(combinedFilter);
 
         switch (relationship.type) {
             case 'hasOne':
-                return await relatedModel.findByForeignKey(foreignKeyValue);
+                return await relatedModel.findRaw(whereClause, '*', whereParams);
             case 'hasMany':
-                return await relatedModel.findAllByForeignKey(foreignKeyValue);
+                return await relatedModel.getWhere(whereClause, whereParams);
             case 'belongsTo':
-                return await relatedModel.find(foreignKeyValue);
+                return await relatedModel.findRaw(whereClause, '*', whereParams);
             default:
                 return null;
         }
     }
 
-    // Execute query with error handling
     private async executeQuery<T>(sql: string, params: any[] = []): Promise<T | null> {
         try {
             const [rows] = await connectionPool.query<any>(sql, params);
@@ -88,7 +95,6 @@ class BaseModel {
         }
     }
 
-    // Get all records with relationships and guarded columns applied
     async get() {
         const selectColumns = await this.getSelectColumns();
         const query = `
@@ -105,12 +111,11 @@ class BaseModel {
         return rows;
     }
 
-    // Get records with specific conditions and relationships
-    async getWhere(where: string) {
+    async getWhere(where: string, params: any[] = [], skipRelations: boolean = false) {
         const selectColumns = await this.getSelectColumns();
         const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${where} AND deleted_at IS NULL`;
-        const rows = await this.executeQuery<any[]>(query);
-        if (rows) {
+        const rows = await this.executeQuery<any[]>(query, params);
+        if (rows && !skipRelations) {
             for (const row of rows) {
                 await this.fetchRelationshipsForRow(row);
             }
@@ -118,7 +123,6 @@ class BaseModel {
         return rows;
     }
 
-    // Find a record by primary key or specified column with relationships
     async find(id: number, col?: string) {
         const selectColumns = await this.getSelectColumns();
         const query = `
@@ -132,51 +136,47 @@ class BaseModel {
         return rows ? rows[0] : null;
     }
 
-    // Find a record by column value with relationships
-    async findWhere(column: string, value: any, select: string = '*') {
-        const selectColumns = await this.getSelectColumns(select);
-        const query = `
-            SELECT ${selectColumns} FROM ${this.table}
-            WHERE ${column} = ? AND deleted_at IS NULL
-        `;
-        const rows = await this.executeQuery<any[]>(query, [value]);
-        if (rows && rows[0]) {
-            await this.fetchRelationshipsForRow(rows[0]);
-        }
-        return rows ? rows[0] : null;
-    }
-
-    // Find a record with custom raw conditions and relationships
-    async findRaw(where: string, select: string = '*') {
+    async findRaw(where: string, select: string = '*', params: any[] = []) {
         const selectColumns = await this.getSelectColumns(select);
         const query = `
             SELECT ${selectColumns} FROM ${this.table}
             WHERE ${where} AND deleted_at IS NULL
         `;
-        const rows = await this.executeQuery<any[]>(query);
+        const rows = await this.executeQuery<any[]>(query, params);
         if (rows && rows[0]) {
             await this.fetchRelationshipsForRow(rows[0]);
         }
         return rows ? rows[0] : null;
     }
 
-    // Find a single record by a foreign key
-    async findByForeignKey(value: any) {
+    async findWhere(column: string, value: any, select: string = '*') {
+        const selectColumns = await this.getSelectColumns(select);
+        const query = `
+            SELECT ${selectColumns} FROM ${this.table}
+            WHERE ${column} = ? AND deleted_at IS NULL
+            LIMIT 1
+        `;
+        const rows: any[] | null = await this.executeQuery<any[]>(query, [value]);
+        if (rows && rows[0]) {
+            await this.fetchRelationshipsForRow(rows[0]);
+        }
+        return rows ? rows[0] : null;
+    }
+
+    async findByForeignKey(value: any, foreignKey: string) {
         const selectColumns = await this.getSelectColumns();
-        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${this.primary} = ? AND deleted_at IS NULL`;
+        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${foreignKey} = ? AND deleted_at IS NULL`;
         const rows = await this.executeQuery<any[]>(query, [value]);
         return rows ? rows[0] : null;
     }
 
-    // Find multiple records by a foreign key
-    async findAllByForeignKey(value: any) {
+    async findAllByForeignKey(value: any, foreignKey: string) {
         const selectColumns = await this.getSelectColumns();
-        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${this.primary} = ? AND deleted_at IS NULL`;
+        const query = `SELECT ${selectColumns} FROM ${this.table} WHERE ${foreignKey} = ? AND deleted_at IS NULL`;
         const rows = await this.executeQuery<any[]>(query, [value]);
         return rows || [];
     }
 
-    // Soft delete a record by updating deleted_at
     async delete(id: number) {
         const query = `
             UPDATE ${this.table}
@@ -186,7 +186,6 @@ class BaseModel {
         return await this.executeQuery(query, [now(), id]);
     }
 
-    // Create a new record
     async create(data: Record<string, any>) {
         data.created_at = now();
         const columns = Object.keys(data).join(', ');
@@ -197,7 +196,6 @@ class BaseModel {
         return await this.executeQuery(query, Object.values(data));
     }
 
-    // Update a record by primary key
     async update(data: Record<string, any>, id: number) {
         const updates = Object.keys(data).map(key => `${key} = ?`).join(', ');
         const query = `
@@ -206,6 +204,20 @@ class BaseModel {
             WHERE ${this.primary} = ?
         `;
         return await this.executeQuery(query, [...Object.values(data), id]);
+    }
+
+    async count(withTrashed: boolean = false, params?: Record<string, any>): Promise<number | null> {
+        let query = `SELECT COUNT(*) as count FROM ${this.table} WHERE TRUE`;
+        if (!withTrashed) {
+            query += ' AND deleted_at IS NULL';
+        }
+        if (params) {
+            query += Object.keys(params)
+                .map(key => ` AND ${key} = ?`)
+                .join('');
+        }
+        const rows = await this.executeQuery<{ count: number }[]>(query, Object.values(params || {}));
+        return rows && rows[0] ? rows[0].count : null;
     }
 }
 

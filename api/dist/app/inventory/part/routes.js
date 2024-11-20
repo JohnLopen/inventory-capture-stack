@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const partController_1 = require("./partController");
+const partRoutes = (0, express_1.Router)();
+partRoutes.get('/', partController_1.PartController.get);
+partRoutes.post('/', partController_1.PartController.postPart);
+partRoutes.get('/:boxId/details', partController_1.PartController.getPart);
+partRoutes.get('/count', partController_1.PartController.getCount);
+exports.default = partRoutes;

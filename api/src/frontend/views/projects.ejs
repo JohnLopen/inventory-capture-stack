@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Capture Projects</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/public/css/projects.css" />
+    <link rel="stylesheet" href="/public/css/nav.css" />
+</head>
+
+<body>
+    <!-- Project loads here -->
+</body>
+
+<script src="/public/js/vendor/jquery-3.7.1.min.js"></script>
+<script>
+    $(function () {
+        if (!sessionStorage.getItem('token'))
+            location.href = '/'
+        $.ajax({
+            url: location.href,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/html',
+                'Authorization': sessionStorage.getItem('token')
+            },
+            success: function (response) {
+                $('body').html(response)
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading content:', error);
+                if (xhr.status == 403) {
+                    sessionStorage.removeItem('token')
+                    location.href = '/'
+                }
+            }
+        });
+    })
+</script>
+
+</html>

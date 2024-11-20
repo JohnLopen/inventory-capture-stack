@@ -2,11 +2,22 @@ import { User } from "./User";
 
 export class UserService {
 
-    static getByUsername(email: string | undefined) {
-        return new User().findWhere('username', email)
+    /**
+     * 
+     * @param email 
+     * @returns 
+     */
+    static getByUsername(username: string | undefined) {
+        return new User().findWhere('username', username)
     }
 
-    generatePassword(password: string) {
-        
+    /**
+     * 
+     * @param apiKey 
+     * @returns 
+     */
+    static findByApiKey(apiKey: string) {
+        return new User().findWhere('api_key', apiKey)
     }
+
 }

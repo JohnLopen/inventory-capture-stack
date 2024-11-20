@@ -1,0 +1,30 @@
+nav {
+    position: relative;
+}
+
+nav>a,
+nav>span {
+    font-size: small;
+    text-decoration: none;
+    color: #999;
+}
+
+nav>span {
+    color: #333;
+}
+
+.fa-solid {
+    font-size: x-small;
+    color: #999;
+    margin: 0 5px;
+    position: relative;
+}
+
+a {
+    text-decoration: none;
+    font-size: small;
+}
+
+a>span {
+    text-decoration: underline;
+}

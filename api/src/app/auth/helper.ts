@@ -1,6 +1,7 @@
 import { configDotenv } from 'dotenv';
 configDotenv()
 
+import * as crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -44,3 +45,11 @@ export const generateToken = (data: Record<string, any>): string => {
 
     return token;
 };
+
+/**
+ * 
+ * @returns 
+ */
+export const generateApiKey = (): string => {
+    return crypto.randomBytes(32).toString('hex'); // 64 characters long
+}

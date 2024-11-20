@@ -1,16 +1,15 @@
-export class SlackWebhook {
-    private webhookUrl: string;
-
-    constructor(webhookUrl: string) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SlackWebhook = void 0;
+class SlackWebhook {
+    constructor(webhookUrl) {
         this.webhookUrl = webhookUrl;
     }
-
-    async postMessage(message: string, blocks: any[] | null = null): Promise<void> {
+    async postMessage(message, blocks = null) {
         const payload = {
             text: message,
             ...(blocks && { blocks }) // Only include blocks if provided
         };
-
         try {
             const response = await fetch(this.webhookUrl, {
                 method: 'POST',
@@ -19,15 +18,16 @@ export class SlackWebhook {
                 },
                 body: JSON.stringify(payload)
             });
-
             if (response.ok) {
                 console.log('Message posted successfully.');
-            } else {
+            }
+            else {
                 console.error(`Failed to post message: ${response.status} ${response.statusText}`);
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error('Error posting message:', error);
         }
     }
-
 }
+exports.SlackWebhook = SlackWebhook;

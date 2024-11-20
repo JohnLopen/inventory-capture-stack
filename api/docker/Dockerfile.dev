@@ -1,0 +1,15 @@
+# Use a Node.js image with Python pre-installed
+FROM node:alpine
+
+# Set environment variables
+ENV PATH /app/node_modules/.bin:$PATH
+
+# Copy the rest of the application
+WORKDIR /app
+COPY . .
+
+# Setup Node.js application
+WORKDIR /app
+COPY package*.json ./
+
+CMD ["npm", "run", "dev"]
