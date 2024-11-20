@@ -5,56 +5,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory Capture Projects</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" 
-        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" 
-        crossorigin="anonymous" 
-        referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/public/css/projects.css" />
     <link rel="stylesheet" href="/public/css/nav.css" />
 </head>
 
 <body>
-    <div class="container">
-        <h1>
-            <img src="https://inventorycapture.com/api/images/logo/logo-main.png" width="256px" />
-        </h1>
-        <nav class="breadcrumb">
-            <a href="/"><i class="fa-solid fa-home"></i> Home</a> <i class="fa-solid fa-chevron-right"></i>
-            <span>Projects</span>
-        </nav>
-        <table>
-            <thead>
-                <tr>
-                    <th>Project #</th>
-                    <th>Project Name</th>
-                    <th>Boxes</th>
-                    <th>Parts</th>
-                    <th>Photos</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% projects.forEach(project=> { %>
-                    <tr class="project-row">
-                        <td>
-                            <%= project.id %>
-                        </td>
-                        <td><a href="projects/<%= project.id %>/boxes">
-                                <%= project.label %>
-                            </a></td>
-                        <td>
-                            <%= project.boxes.length %>
-                        </td>
-                        <td>
-                            <%= project.parts %>
-                        </td>
-                        <td>
-                            <%= project.captures %>
-                        </td>
-                    </tr>
-                    <% }) %>
-            </tbody>
-        </table>
-    </div>
+    <!-- Project loads here -->
 </body>
+
+<script src="/public/js/vendor/jquery-3.7.1.min.js"></script>
+<script>
+    $(function () {
+        if (!sessionStorage.getItem('token'))
+            location.href = '/'
+        $.ajax({
+            url: location.href,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/html',
+                'Authorization': sessionStorage.getItem('token')
+            },
+            success: function (response) {
+                $('body').html(response)
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading content:', error);
+                if (xhr.status == 403) {
+                    sessionStorage.removeItem('token')
+                    location.href = '/'
+                }
+            }
+        });
+    })
+</script>
 
 </html>

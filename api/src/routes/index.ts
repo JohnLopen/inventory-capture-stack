@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import userRoutes from '../app/user/routes'
-import { authenticateJWT } from './middlewares/auth'
+import { authMiddleware } from './middlewares/auth'
 import authRoutes from '../app/auth/routes'
 import inventoryRoutes from '../app/inventory/routes'
 
@@ -18,7 +18,7 @@ mainRouter.get(
 
 // User
 mainRouter.use('/auth', authRoutes)
-mainRouter.use('/users', authenticateJWT, userRoutes)
+mainRouter.use('/users', authMiddleware, userRoutes)
 
 // Inventory routes
 mainRouter.use('/inventory', inventoryRoutes)

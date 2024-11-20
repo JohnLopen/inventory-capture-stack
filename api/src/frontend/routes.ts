@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ProjectController } from "../app/inventory/project/projectController";
 import { CaptureController } from "../app/inventory/capture/captureController";
+import { authMiddleware } from "../routes/middlewares/auth";
 
 const mainRouter = Router();
 
@@ -20,10 +21,21 @@ mainRouter.get(
     }
 )
 
-mainRouter.get('/:user/projects', ProjectController.viewUserProjects)
-mainRouter.get('/:user/projects/:projectId/boxes', ProjectController.viewProjectBoxes)
-mainRouter.get('/capture/:captureId', CaptureController.getCapture)
-mainRouter.post('/capture/:captureId', CaptureController.postCaptureData)
-mainRouter.post('/capture/:captureId/rotate', CaptureController.postRotateCapture)
+mainRouter.get(
+    "/login",
+    async (req: Request, res: Response) => {
+        res.render('login');
+    }
+)
+
+mainRouter.get('/projects', ProjectController.viewUserProjects)
+mainRouter.post('/projects', authMiddleware, ProjectController.viewUserProjects)
+
+mainRouter.get('/projects/:projectId/boxes', ProjectController.viewProjectBoxes)
+mainRouter.post('/projects/:projectId/boxes', authMiddleware, ProjectController.viewProjectBoxes)
+
+mainRouter.get('/capture/:captureId', authMiddleware, CaptureController.getCapture)
+mainRouter.post('/capture/:captureId', authMiddleware, CaptureController.postCaptureData)
+mainRouter.post('/capture/:captureId/rotate', authMiddleware, CaptureController.postRotateCapture)
 
 export default mainRouter

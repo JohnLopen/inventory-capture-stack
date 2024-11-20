@@ -36,13 +36,7 @@ $(function () {
         showLightbox()
 
         try {
-            const _capture = await fetch(`/capture/${captureId}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': sessionStorage.getItem('token'),
-                    'Content-Type': 'application/json'
-                }
-            })
+            const _capture = await fetch(`/capture/${captureId}`)
                 .then(response => response.json());
 
             capture = _capture.capture
@@ -125,7 +119,6 @@ $(function () {
         await fetch(`/capture/${captureId}`, {
             method: 'POST',
             headers: {
-                'Authorization': sessionStorage.getItem('token'),
                 "Content-Type": "application/json" // Set content type to JSON
             },
             body: JSON.stringify(captureData)
@@ -152,7 +145,6 @@ $(function () {
         await fetch(`/capture/${captureId}/rotate`, {
             method: 'POST',
             headers: {
-                'Authorization': sessionStorage.getItem('token'),
                 "Content-Type": "application/json" // Set content type to JSON
             },
             body: JSON.stringify({ clockwise: true })

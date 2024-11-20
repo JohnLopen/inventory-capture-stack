@@ -72,11 +72,18 @@ export class ProjectController {
     }
 
     static async viewProjectBoxes(req: Request, res: Response) {
-        const { projectId, user }: any = req.params
+        const { download } = req.query
+        const { id } = req.user || {}
+        const { projectId }: any = req.params
 
-        const project = await new Project().find(projectId)
+        if (!id) {
+            res.render('boxes', { projects: [], remote: true });
+            return
+        }
+
+        const project = await new Project().findRaw(`id=${projectId}  AND user_id=${id}`)
         if (!project?.id)
-            return res.redirect('/')
+            return res.redirect('/projects')
 
         project.boxes = await new Box().getWhere(`project_id=${project.id}`)
         console.log('project.boxes', project.boxes)
@@ -133,17 +140,25 @@ export class ProjectController {
             }
         }
 
-        // res.status(200).json(project)
-        // return
+        if (download) {
+            res.status(200).json({ project })
+            return
+        }
 
-        res.render('boxes', { user, project, capture_base: process.env.CAPTURE_BASE_URL, generateCaptureRow });
+        res.render('boxList', { user: req.user, project, capture_base: process.env.CAPTURE_BASE_URL, generateCaptureRow });
 
     }
 
     static async viewUserProjects(req: Request, res: Response) {
-        const { user } = req.params
+        const { download } = req.query
+        const { id } = req.user || {}
 
-        let projects: any = await new Project().getWhere(`user_id=${user.replace('user-', '')}`, [], true)
+        if (!id) {
+            res.render('projects', { projects: [], remote: true });
+            return
+        }
+
+        let projects: any = await new Project().getWhere(`user_id=${id}`, [], true)
         for (let project of projects) {
             project.boxes = await new Box().getWhere(`project_id=${project.id}`)
             console.log('project.boxes', project.boxes)
@@ -166,7 +181,12 @@ export class ProjectController {
             project.captures = capturesCount
         }
 
-        res.render('projects', { projects, user });
+        if (download) {
+            res.status(200).json({ projects })
+            return
+        }
+
+        res.render('projectList', { projects });
 
     }
 

@@ -67,14 +67,25 @@
         <h1>
             <img src="https://inventorycapture.com/api/images/logo/logo-main.png" width="256px" />
         </h1>
-        <p>Please wait...</p>
+        <p>Please enter your user number to proceed.</p>
+        <form onsubmit="return submitUserNumber(event)">
+            <div class="input-field">
+                <input type="text" required placeholder="Enter your user number" id="userNumber">
+            </div>
+            <button type="submit">Submit</button>
+        </form>
     </div>
     <script>
-        const token = sessionStorage.getItem('token')
-        if (!token)
-            location.href = '/login'
-        else
-            location.href = '/projects'
+        function submitUserNumber(event) {
+            event.preventDefault();
+            
+            const userNumber = document.getElementById('userNumber').value;
+            if (userNumber) {
+                location.href = `/user-${userNumber}/projects`;
+            } else {
+                alert('Please enter a user number.');
+            }
+        }
     </script>
 </body>
 

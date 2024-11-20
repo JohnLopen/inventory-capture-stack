@@ -37,7 +37,7 @@
             margin: 20px 0;
         }
 
-        input[type="text"] {
+        .input-field input {
             padding: 10px;
             font-size: 16px;
             width: 80%;
@@ -67,14 +67,45 @@
         <h1>
             <img src="https://inventorycapture.com/api/images/logo/logo-main.png" width="256px" />
         </h1>
-        <p>Please wait...</p>
+        <p>Please login to proceed.</p>
+        <form onsubmit="return login(event)">
+            <div class="input-field">
+                <input type="text" autocomplete="true" required placeholder="Username" id="username">
+            </div>
+            <div class="input-field">
+                <input type="password" autocomplete="false" required placeholder="Password" id="password">
+            </div>
+            <button type="submit">LOGIN</button>
+        </form>
     </div>
     <script>
-        const token = sessionStorage.getItem('token')
-        if (!token)
-            location.href = '/login'
-        else
-            location.href = '/projects'
+        async function login(event) {
+            event.preventDefault();
+
+            let apiPath = location.href.includes('localhost') ? 'http://localhost:5000/auth/login' : '/api/auth/login'
+
+            await fetch(apiPath, {
+                method: 'POST',
+                body: JSON.stringify({
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(async (response) => {
+                    if (response.ok) {
+                        const data = await response.json()
+                        const { user, token } = data
+                        sessionStorage.setItem('token', token)
+                        sessionStorage.setItem('user', JSON.stringify(user))
+                        location.href = '/projects'
+                    }
+                    else alert('Invalid username/password')
+                })
+                .catch(() => alert('Invalid username/password'))
+        }
     </script>
 </body>
 

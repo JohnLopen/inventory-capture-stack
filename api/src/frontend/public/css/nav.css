@@ -1,4 +1,38 @@
+.nav {
+    margin-top: 1.5em;
+    display: flex;
+    flex-direction: row;
+}
+
+.nav .spacer {
+    flex: 1;
+}
+
+.nav .downloader {
+    font-size: smaller;
+    padding: 3px 6px;
+    border-radius: 5px;
+    color: #333;
+    background-color: #f2f2f2;
+    cursor: pointer;
+}
+
+.nav .downloader:hover {
+    background-color: #ccc;
+}
+
+.nav .downloader .fa-solid {
+    font-size: small;
+    margin: 0;
+    top: 0px;
+}
+
+.nav .downloader:hover .fa-solid {
+    color: #565555;
+}
+
 nav {
+    top: 2px;
     position: relative;
 }
 

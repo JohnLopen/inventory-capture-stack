@@ -8,7 +8,7 @@ export interface AuthenticatedRequest extends Request {
 declare global {
     namespace Express {
         interface Request {
-            user: User; // Adjust the type to whatever your decoded JWT contains
+            user: User;
         }
     }
 }

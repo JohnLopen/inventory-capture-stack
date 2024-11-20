@@ -1,12 +1,19 @@
 import { Request, Response } from 'express'
-import BaseModel from '../../../lib/db/BaseModel'
 import { Part } from './Part'
 
 export class PartController {
 
     static async get(req: Request, res: Response) {
         const { box_id } = req.query
-        const parts = await new Part().getWhere(`box_id=${box_id}`)
+        const parts: any = await new Part().getWhere(`box_id=${box_id}`)
+        for (const part of parts) {
+            part.captures = []
+            if (part.label_capture?.id)
+                part.captures.push(part.label_capture)
+            if (part.supplement_captures?.length)
+                part.captures = part.captures.concat(part.supplement_captures)
+        }
+
         const count = await new Part().count(true, { box_id })
         res.status(200).json({ parts, count })
     }
@@ -39,28 +46,8 @@ export class PartController {
         })
         console.log('New part', newPart)
 
-        // TODO Update project
-        // await ProjectService.update({ updated_at: now() }, boxId)
-
         res.status(200).json({ part: await partModel.find(newPart?.insertId) })
     }
-
-    // static async updateBox(req: Request, res: Response) {
-    //     const { label, id }: any = req.body
-
-    //     if (!label) {
-    //         res.status(500).send({ message: 'Box label is required' })
-    //         return
-    //     }
-    //     const box = await new Part().find(id)
-
-    //     await BoxService.update({ label }, id)
-    //     await ProjectService.update({ updated_at: now() }, box.boxId)
-
-    //     console.log('Box updated',)
-
-    //     res.status(200).json({})
-    // }
 
     static async getCount(req: Request, res: Response) {
         res.status(200).json({ parts: await new Part().count() })
