@@ -1,5 +1,4 @@
 import 'package:id_scanner/features/part/part.dart';
-import 'package:id_scanner/features/captures/capture.dart';
 
 class Box {
   final int? id;
